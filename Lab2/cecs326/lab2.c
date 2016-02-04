@@ -8,6 +8,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/types.h>
+# include <sys/stat.h>
 # include <unistd.h>
 
 //argc is the number of arguments, argv is the array of arguments
@@ -20,6 +21,16 @@ int main(int argc, char *argv[])
         printf("\n %s (Random integer) - Runs the assignment tasks, with specified sleep time\n", argv[0]);
 		exit(1);
 	}
+
+	//Create directory cecs326
+	mkdir("./cecs326", 0777);
+
+	//Create a file lab2A, using a fork
+	pid_t pid;
+	pid = fork();
+
+	if(pid==0) execlp("cat", ">./cecs326/lab2A" NULL);
+	else wait();
 
 	//Finish up and exit
 	printf ("\n");
