@@ -25,16 +25,14 @@ int main(int argc, char *argv[])
 	//Create directory cecs326
 	mkdir("./cecs326", 0777);
 
-	//Create a file lab2A, using a fork
+	//Create a file lab2A, using a pip and a fork
 	pid_t pid;
 	pid = fork();
 
 	if(pid==0) {
-		printf("\nEXECLP\n");
-		execlp("cat", ">./cecs326/lab2A", NULL);
+		execlp("bash", "bash", "-c", "echo \"This is a test file\nusing UNIX commands\" | cat >./cecs326/lab2A", NULL);
 	}
 	else {
-		printf("\nEXECLP\n");
 		wait();
 	}
 
