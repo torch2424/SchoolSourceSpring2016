@@ -29,7 +29,9 @@ int main(int argc, char *argv[])
 	pid_t pid;
 	pid = fork();
 
-	if(pid==0) execlp("cat", ">./cecs326/lab2A" NULL);
+	if(pid==0) {
+		execlp("cat", ">./cecs326/lab2A", NULL);
+	}
 	else wait();
 
 	//Finish up and exit
