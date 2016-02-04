@@ -25,12 +25,60 @@ int main(int argc, char *argv[])
 	//Create directory cecs326
 	mkdir("./cecs326", 0777);
 
-	//Create a file lab2A, using a pip and a fork
+	//Create a file lab2A, fork
 	pid_t pid;
 	pid = fork();
 
 	if(pid==0) {
+		//Use bash to run commands and allow us to pipe
 		execlp("bash", "bash", "-c", "echo \"This is a test file\nusing UNIX commands\" | cat >./cecs326/lab2A", NULL);
+	}
+	else {
+		wait();
+	}
+
+	//Create another directory named lab2 in cecs326
+	mkdir("./cecs326/lab2", 0777);
+
+	//Use cat again to create a file named lab2b
+	pid = fork();
+
+	if(pid <= 0) {
+		//Use bash to run commands and allow us to pipe
+		execlp("bash", "bash", "-c", "echo \"This file will be merged with lab2A\nEnd of file\" | cat >./cecs326/lab2/lab2B", NULL);
+	}
+	else {
+		wait();
+	}
+
+	//copy lab2B into cecs 326
+	pid = fork();
+
+	if(pid <= 0) {
+		//Use bash to run commands and allow us to pipe
+		execlp("cp", "cp", "./cecs326/lab2/lab2B", "./cecs326",  NULL);
+	}
+	else {
+		wait();
+	}
+
+	//merge the files
+	pid = fork();
+
+	if(pid <= 0) {
+		//Use bash to run commands and allow us to pipe
+		execlp("cat", "cat", "./cecs326/lab2A", "./cecs326/lab2/lab2B", "./lab2C",  NULL);
+	}
+	else {
+		wait();
+	}
+
+	//Remove all files in cecs326 and lab2
+	pid = fork();
+
+	if(pid <= 0) {
+		//Use bash to run commands and allow us to pipe
+		execlp("rm", "rm", "-rf", "./cecs326", NULL);
 	}
 	else {
 		wait();
