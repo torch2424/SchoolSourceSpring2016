@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	pid = fork();
 
 	if(pid <= 0) {
-		//Use bash to run commands and allow us to pipe
+		//Use bash to run commands and allow us to pipe another file
 		execlp("bash", "bash", "-c", "echo \"This file will be merged with lab2A\nEnd of file\" | cat >./cecs326/lab2/lab2B", NULL);
 	}
 	else {
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	pid = fork();
 
 	if(pid <= 0) {
-		//Use bash to run commands and allow us to pipe
+		//Use cp to copy
 		execlp("cp", "cp", "./cecs326/lab2/lab2B", "./cecs326",  NULL);
 	}
 	else {
@@ -65,9 +65,11 @@ int main(int argc, char *argv[])
 	//merge the files
 	pid = fork();
 
+
 	if(pid <= 0) {
 		//Use bash to run commands and allow us to pipe
-		execlp("cat", "cat", "./cecs326/lab2A", "./cecs326/lab2/lab2B", "./lab2C",  NULL);
+		//use cat to concatenate the two files
+		execlp("bash", "bash", "-c", "cat ./cecs326/lab2A ./cecs326/lab2/lab2B > lab2C",  NULL);
 	}
 	else {
 		wait();
