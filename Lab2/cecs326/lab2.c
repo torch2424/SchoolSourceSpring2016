@@ -30,9 +30,13 @@ int main(int argc, char *argv[])
 	pid = fork();
 
 	if(pid==0) {
+		printf("\nEXECLP\n");
 		execlp("cat", ">./cecs326/lab2A", NULL);
 	}
-	else wait();
+	else {
+		printf("\nEXECLP\n");
+		wait();
+	}
 
 	//Finish up and exit
 	printf ("\n");
