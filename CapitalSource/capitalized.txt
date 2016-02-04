@@ -1,0 +1,419 @@
+IMPORT java.io.BufferedReader;
+IMPORT java.io.File;
+IMPORT java.io.FileInputStream;
+IMPORT java.io.FileNotFoundException;
+IMPORT java.io.FileOutputStream;
+IMPORT java.io.IOException;
+IMPORT java.io.InputStreamReader;
+IMPORT java.io.OutputStreamWriter;
+IMPORT java.io.Reader;
+IMPORT java.io.Writer;
+IMPORT java.sql.SQLException;
+IMPORT java.util.ArrayList;
+IMPORT java.util.Arrays;
+IMPORT java.util.Collections;
+IMPORT java.util.Scanner;
+IMPORT java.util.regex.Pattern;
+
+IMPORT javax.naming.NamingException;
+IMPORT javax.swing.JFileChooser;
+
+IMPORT org.bson.Document;
+
+IMPORT com.mongodb.MongoClient;
+IMPORT com.mongodb.client.MongoCollection;
+IMPORT com.mongodb.client.MongoDatabase;
+
+
+/**
+ * 
+ * @author torch2424
+ * 
+ * This is to be used with the macro FOR Word Document to Html Macro:
+ * https://gist.github.com/torch2424/657c7b75e52d516de148
+ * 
+ * This CLASS will take a selected folder, and convert all of the html plages within to UTF, and then send it to a specified backend
+ *
+ */
+PUBLIC CLASS uploadFiles {
+	
+	/**
+	 * @param args
+	 * @THROWS NamingException
+	 * @THROWS SQLException
+	 * @THROWS FileNotFoundException 
+	 */
+	PUBLIC STATIC VOID main(String[] args) THROWS SQLException, FileNotFoundException
+	{
+		//Welcome The User!
+		System.out.println("Hello! Welcome to the book uploader, plese selected a foler FOR html pages to be uploaded!");
+		
+		System.out.println();
+		
+		// Open our file chooser
+		JFileChooser chooser = NEW JFileChooser();
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		IF (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+		{
+			// Get thefolder
+			File selectedFile = chooser.getSelectedFile();
+			IF (selectedFile.isDirectory())
+			{	
+				
+				//Backend Properties SQL
+//				String url = "jdbc:mysql://devdb.kondeo.com:3306/";
+//				String dbName = "mwwwordpairs";
+//				String driver = "com.mysql.jdbc.Driver";
+//				String userName = "m5rrckbr9fwpzjwj";
+//				String password = "3gZQeML72QHQSFQW";
+				
+				TRY
+				{
+					//Create our connection to the backend
+//					Class.forName(driver).newInstance();
+//					Connection conn = DriverManager.getConnection(url + dbName, userName, password);
+					
+					//Inform the user that we're starting!
+					System.out.println("Connecting to the database...");
+					
+					//Create a new Mongo Client going to the url with the port 3000
+					 MongoClient mongoClient = NEW MongoClient("localhost" , 27017);
+					 
+					 //Get the database table
+					MongoDatabase db = mongoClient.getDatabase("UploadedBook");
+					MongoCollection<Document> collection = db.getCollection("Pages");
+					
+					//Our array list of documents
+					ArrayList<Document> mongoDocuments = NEW ArrayList<Document>();
+					
+					
+					//Timeout to allow the backend connection logs, kinda hacky, but makes the console look better
+					TRY{
+					    Thread.sleep(750);
+					}CATCH(InterruptedException e){
+					    System.out.println("got interrupted!");
+					}
+					
+					//Create a scanner for appending  books together
+					Scanner user = NEW Scanner(System.in);
+					
+					//Ask if they would like to append books
+					System.out.println("Would you like to append THIS book to another? " +
+					"Enter y FOR yes or n FOR no.");
+					System.out.println();
+					
+					//check their answer is legit, init last page number, and loop for real answer
+					BOOLEAN legit = false;
+					INT lastPage = 0;
+					WHILE(!legit)
+					{
+						//Get the input
+						String input = user.nextLine();
+						
+						//Check if it is a character
+						IF(input.length() > 0)
+						{
+							//Check if it is greater than zero
+							IF(input.toLowerCase().charAt(0) == 'y')
+							{
+								//Add it to last page
+								lastPage = (int)collection.count();
+								
+								//Inform the user
+								System.out.println("Awesome! I'll add " + lastPage + " to all page numbers!");
+								System.out.println();
+								
+								//Break from the loop
+								legit = true;
+							}
+							ELSE IF(input.toLowerCase().charAt(0) == 'n')
+							{
+								//Inform the user
+								System.out.println("Cool! I will not add anything to the page numbers.");
+								System.out.println();
+								
+								//Break from the loop
+								legit = true;
+							}
+							ELSE {
+								//Sorry
+								System.out.println("Sorry but I can't accept that answer. Enter y FOR yes or n FOR no.");
+								System.out.println();
+							}
+						}
+						ELSE {
+							//Sorry
+							System.out.println("Sorry but I can't accept that answer. Enter y FOR yes or n FOR no.");
+							System.out.println();
+						}
+					}
+					
+					//Close the scanner
+					user.close();
+					
+					
+					
+					//Inform the user that we're starting!
+					System.out.println("Now converting and uploading the files...");
+					System.out.println();
+					
+					//First convert it all to UTF
+					selectedFile = utfConvert(selectedFile, lastPage);
+					
+					//Get our files in our directory
+					File[] pages = selectedFile.listFiles();
+					
+					//Create a scanner for the file
+					Scanner scan = null;
+					String totalString = "";
+					
+					//Getting the the pat of the selected 
+					String paths = selectedFile.getAbsolutePath();
+					
+					//Collect the number of pages uploaded
+					INT numPages = 0;
+					
+					//Loop for every file in our directory
+					FOR(INT i = 0; i < pages.length; ++i)
+					{
+						
+						//Set the pageNumber
+						INT pageNumber = (i + 1 + lastPage);
+
+						//Our total string
+						totalString = "";
+						scan = NEW Scanner(NEW File(paths 
+								+ "/Page" + pageNumber + ".html"), "UTF-8");
+						
+						System.out.println("Uploading Page #" + pageNumber + "!");
+						System.out.println();
+						
+						//skip the first 6 lines
+						FOR(INT j = 0; j < 5; ++j)
+						{
+							IF(scan.hasNextLine())
+							{
+								scan.nextLine();
+							}
+						}
+						
+						WHILE(scan.hasNextLine())
+						{
+							//Get the line
+							String code = scan.nextLine();
+							
+							//Check it is not /body
+							IF(code.contentEquals("</body>"))
+							{
+								//Exit the loop
+								break;
+							}
+							ELSE IF(code.contentEquals("<body lang=EN-US>") || code.contentEquals("</head>"))
+							{
+								//Skip it
+								//print the line, commented only testing
+								//System.out.println("SKIPPED" + code);
+							}
+							ELSE
+							{
+								//print the line, commented only testing
+								//System.out.println(code);
+								//Add it to our total string
+								totalString = totalString + code;
+								
+							}
+						}
+						
+						//Clean up the html
+						totalString = cleanWord(totalString);
+					
+//						String insertTableSQL = "INSERT INTO book (page,content) VALUES (?,?)";
+//						java.sql.PreparedStatement preparedStatement = conn.prepareStatement(insertTableSQL);
+//						preparedStatement.setInt(1, i + 1);
+//						preparedStatement.setString(2, totalString);
+//						// execute insert SQL stetement
+//						preparedStatement .executeUpdate();
+						
+						//Insert the page to the array
+						//cloumns: _id, number, content
+						Document doc = NEW Document("number", Integer.toString(pageNumber))
+						.append("nextnumber", Integer.toString(pageNumber + 1))
+				        .append("content", totalString);
+						
+						//Add to documents array to be sent
+						mongoDocuments.add(doc);
+						
+						//Increase the number of pages converted
+						++numPages;
+					}
+					
+					//Insert all of our documents
+					collection.insertMany(mongoDocuments);
+					
+					//Close our open connections
+					scan.close();
+					mongoClient.close(); 
+//					conn.close();
+					
+					//Output the number of pages, and goodbye the user
+					System.out.println("Pages Uploaded: " + numPages + ", Thank you FOR using the app. " +
+							"Good luck with your Database!");
+				}
+				CATCH (Exception e)
+				{
+					e.printStackTrace();
+				}
+
+			}
+			ELSE
+			{
+				// They did not open memo.txt, warn them, and tell them to
+				// re-open program
+				System.out.println("Not a directory");
+			}
+
+		}
+
+	}
+	
+	
+	
+	//Function to convert our files to UTF
+	PUBLIC STATIC File utfConvert(File selectedFile, Integer lastPage)
+	{
+		
+		//Place all of the files in the directory into an arraylist
+		ArrayList<File> files = NEW ArrayList<File>(Arrays.asList(selectedFile.listFiles()));
+		
+		//Remove all directories in the folder
+		FOR(INT i = 0; i < files.size(); ++i)
+		{
+			//Check if the file is a folder, if it is remove it!
+			IF(files.get(i).isDirectory()) {
+				files.remove(i);
+				i--;
+			}
+		}
+		
+		//Sort the arraylist
+		Collections.sort(files);
+		
+		//Create the Converted subfolder, and delete it if it already exists
+		File convertedFolder = NEW File(selectedFile.getAbsolutePath() + "/Converted");
+		IF(convertedFolder.exists() && convertedFolder.isDirectory()) 
+		{
+				//Delete the files within the folder
+				FOR(File file: convertedFolder.listFiles()) file.delete();
+		}
+		ELSE convertedFolder.mkdir();
+		
+
+		// Do this for all the files in the folder
+		Reader in = null;
+		Writer out = null;
+		FileInputStream fis = null;
+		FOR (INT i = 1; i < files.size(); ++i)
+		{
+			TRY
+			{
+				//Create our input
+				fis = NEW FileInputStream(NEW File(selectedFile.getAbsolutePath() + "/Page" + (i) + ".html"));
+				InputStreamReader isr = NEW InputStreamReader(fis, "Windows-1252");
+
+				in = NEW BufferedReader(isr);
+				StringBuffer buffer = NEW StringBuffer();
+
+				//Read in the lines of HTML
+				INT ch = in.read();
+				WHILE (ch > -1)
+				{
+					buffer.append((char) ch);
+					ch = in.read();
+				}
+
+				// Create the file, and spit all read HTML into it (As UTF)
+				File NEWFile = new File(files.get(i).getParentFile() + "/Converted/Page" + (i + lastPage)
+						+ ".html");
+				FileOutputStream fos = NEW FileOutputStream(newFile.getAbsolutePath());
+				out = NEW OutputStreamWriter(fos, "UTF-8");
+				String converted = buffer.toString();
+				out.write(converted);
+				out.flush();
+			}
+			CATCH (Exception e)
+			{
+				System.out.println(e);
+			}
+		}
+		
+		//Try and catch closing all of our Streams
+		TRY
+		{
+			in.close();
+			fis.close();
+			out.close();
+		}
+		CATCH (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		//Inform User of success
+		System.out.println("Converted HTML into UTF and placed into a Converted sub folder");
+		System.out.println();
+		
+		//Return the converted foldr directory
+		RETURN convertedFolder;
+	}
+	
+	/*
+	 * Clean up the html that Microsoft word adds to our pages (Javascript written by Julian, converted by Aaron)
+	 */
+	PUBLIC STATIC String cleanWord(String totalString) {
+		
+		//Function to clean up word formatting
+		
+		//Remove LineBreaks
+		String lineRegex = "/(\n|\r| class=(\")?Mso[a-zA-Z]+(\")?)/g";
+		totalString.replaceAll(lineRegex, " ");
+		
+		//Remove comments
+		String commentRegex = "<!--(.*?)-->/g";
+		totalString.replaceAll(commentRegex, "");
+		
+		//Remove tags
+		String tagRegex = "<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>/gi";
+		totalString.replaceAll(tagRegex, "");
+		
+		
+		//Remove everything in between and including tags '<style(.)style(.)>
+		String[] badTags = {"style", "script", "applet", "embed", "noframes", "noscript"};
+		
+		FOR(INT ii = 0; ii < badTags.length; ++ii) {
+			String badTagRegex = "<" + badTags[ii] + ".*?" + badTags[ii] + "(.*?)>";
+			totalString.replaceAll(badTagRegex, "");
+		}
+		
+		//Remove all the bad attributes
+		String[] badAttributes = {"style", "start"};
+		
+		FOR(INT ii = 0; ii < badAttributes.length; ++ii) {
+			String badAttRegex = " " + badAttributes[ii] + "=\"(.*?)\"/gi";
+			totalString.replaceAll(badAttRegex, "");
+		}
+		
+		//Replace some spaces
+		totalString.replaceAll("/     /g", " ");
+		totalString.replaceAll("/    /g", " ");
+		totalString.replaceAll("/   /g", " ");
+		totalString.replaceAll("/  /g", " ");
+		totalString.replaceAll("/text-indent:-17.95pt;/g", "margin-left: 23.95pt;");
+		
+		
+		//Finally return the finished string
+		RETURN totalString;
+		
+	}
+
+}
