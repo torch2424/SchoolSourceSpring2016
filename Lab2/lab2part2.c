@@ -39,27 +39,34 @@ int main(int argc, char *argv[])
 
      //Set our child pid
      childpid = 0;
-     for (i=0; i<n;i++) {
+     for(i=0; i<n; i++) {
 
-         if (childpid = fork()) break;
+         //Make a fork, and make sure it worked
+         childpid = fork();
+         if (childpid == 0) break;
+
          if (childpid == -1) {
-         perror ("\n The fork failed\n");
-         exit(1);
+             perror ("\n The fork failed\n");
+             exit(1);
          }
 
          printf("\n %d: process ID:%6ld parent ID:%6ld childID:%6ld", i, (long)getpid(), (long)getppid(), (long)childpid);
-         seed = (int)(getpid() + childpid);
 
-         srand(seed);
          /* since each process has a different childpid, using the childpid
          as the seed number will restart the random function.
          Therefore, each process will have a different sleeptime
          */
-         sleeptime = rand()%m;
+         seed = (int)(getpid() + childpid);
+         srand(seed);
+
+         sleeptime = (rand() % m) + 1;
          printf (" sleep = %d\n", sleeptime);
          sleep(sleeptime);
      }
 
-     //Thank the user and exit the program
-     exit(0);
+    //Finish up and exit
+ 	printf ("\n");
+ 	printf("\nThank you! Have a nice day!\n");
+ 	printf ("\n");
+ 	exit(0);
 }
