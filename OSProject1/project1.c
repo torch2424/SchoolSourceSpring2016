@@ -39,28 +39,38 @@ int main(int argc, char *argv[])
      printf("%-25s%-20s%-10s%-10s%-10s\n", "Level", "Procs", "Parent", "Child1", "Child 2");
      printf("%-25s%-20s%-10s%-10s%-10s\n", "No.", "ID", "ID", "ID", "ID");
 
+     //Spacing
+     printf("\n\n");
+
      //Loop through and create our children
+     int level = 0;
      int i;
      for(i = 0; i < numLevels; i++) {
 
-        //Create two childrens per node
-         childpidLeft = fork();
-         childpidRight = fork();
+          //Create two childrens per node
+           childpidLeft = fork();
+           childpidRight = fork();
 
-         //Error check our children
-         if (childpidLeft == -1) {
-             perror ("\n The left fork failed\n");
-             exit(1);
-         }
-         if (childpidRight == -1) {
-             perror ("\n The right fork failed\n");
-             exit(1);
-         }
+           if(childpidLeft == 0 || childpidRight == 0) continue;
+           //Error check our children
+           else if (childpidLeft == -1) {
+               perror ("\n The left fork failed\n");
+               exit(1);
+           }
+           else if (childpidRight == -1) {
+               perror ("\n The right fork failed\n");
+               exit(1);
+           }
+
+           //Set the level
+           level = i;
+
+           //then we need to break
+            break;
+        }
 
          //Output to the user
-         printf("\n %d: process ID:%6ld parent ID:%6ld childID:%6ld", i, (long)getpid(), (long)getppid(), (long)childpidLeft);
-         printf("\n %d: process ID:%6ld parent ID:%6ld childID:%6ld", i, (long)getpid(), (long)getppid(), (long)childpidRight);
-     }
+         printf("%-25d%-20ld%-10ld%-10ld%-10ld\n", level, (long)getpid(), (long)getppid(), (long)childpidLeft, (long)childpidRight);
 
     //Finish up and exit
     //No nice prompt since it messes up output
