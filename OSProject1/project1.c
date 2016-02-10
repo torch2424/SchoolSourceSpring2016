@@ -9,6 +9,7 @@
 # include <stdlib.h>
 # include <sys/types.h>
 # include <unistd.h>
+#include <time.h>   /* Needed for struct timespec */
 int main(int argc, char *argv[])
 {
      //Initialize some variables
@@ -33,47 +34,66 @@ int main(int argc, char *argv[])
 
      //Set our child pid's
      childpidLeft = 0;
-     childpidRight = 0 ;
+     childpidRight = 0;
 
      //Print our Text Header
      printf("%-25s%-20s%-10s%-10s%-10s\n", "Level", "Procs", "Parent", "Child1", "Child 2");
      printf("%-25s%-20s%-10s%-10s%-10s\n", "No.", "ID", "ID", "ID", "ID");
 
      //Spacing
-     printf("\n\n");
+     printf("\n");
+
+     //Save our level and parent id here
+     //Since parent can finish before the child
+     int level = 0;
+     pid_t parentpid = 0;
 
      //Loop through and create our children
-     int level = 0;
      int i;
      for(i = 0; i < numLevels; i++) {
 
           //Create two childrens per node
-           childpidLeft = fork();
-           childpidRight = fork();
+           if((childpidLeft = fork()) == 0 || (childpidRight = fork()) == 0) {
 
-           if(childpidLeft == 0 || childpidRight == 0) continue;
-           //Error check our children
-           else if (childpidLeft == -1) {
-               perror ("\n The left fork failed\n");
-               exit(1);
-           }
-           else if (childpidRight == -1) {
-               perror ("\n The right fork failed\n");
-               exit(1);
-           }
+             //Error check our children
+             if (childpidLeft == -1) {
+                 perror ("\n The left fork failed\n");
+                 exit(1);
+             }
 
-           //Set the level
-           level = i;
+             if (childpidRight == -1) {
+                 perror ("\n The right fork failed\n");
+                 exit(1);
+             }
+
+             //Increase our level
+             level++;
+
+             //Save our parent pid
+             parentpid = getppid();
+
+             //reset our child Pids
+             childpidLeft = 0;
+             childpidRight = 0;
+
+             //sleep a little to avoid child finishing before the parent
+             //Nano sleep will allow us to sleep half a second
+             nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
+
+             //Continue the loop
+              continue;
+           }
 
            //then we need to break
             break;
         }
 
          //Output to the user
-         printf("%-25d%-20ld%-10ld%-10ld%-10ld\n", level, (long)getpid(), (long)getppid(), (long)childpidLeft, (long)childpidRight);
+         printf("%-25d%-20ld%-10ld%-10ld%-10ld\n", level, (long)getpid(), (long)parentpid, (long)childpidLeft, (long)childpidRight);
 
     //Finish up and exit
-    //No nice prompt since it messes up output
- 	//printf("\nProcess Died...Thank you! Have a nice day!\n");
- 	exit(0);
+    //Make parent wait here for cleaner output
+    //And to hang the terminal until everything has finished
+     wait();
+ 	  exit(0);
 }
