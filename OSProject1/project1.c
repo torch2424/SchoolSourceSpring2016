@@ -46,11 +46,12 @@ int main(int argc, char *argv[])
      //Save our level and parent id here
      //Since parent can finish before the child
      int level = 0;
-     pid_t parentpid = 0;
+     pid_t parentpid = getppid();
 
      //Loop through and create our children
+     //Levels + 1 since I guess input of 3 means 4 levels?
      int i;
-     for(i = 0; i < numLevels; i++) {
+     for(i = 0; i < numLevels + 1; i++) {
 
           //Create two childrens per node
           //And, If they are children
