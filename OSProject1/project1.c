@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
          childpidLeft = fork();
          childpidRight = fork();
 
+         //Error check our children
          if (childpidLeft == -1) {
              perror ("\n The left fork failed\n");
              exit(1);
