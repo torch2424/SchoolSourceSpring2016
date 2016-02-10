@@ -12,61 +12,53 @@
 int main(int argc, char *argv[])
 {
      //Initialize some variables
-     int i, m, n, sleeptime, seed;
-     pid_t childpid;
+     int numLevels;
+     pid_t childpidLeft;
+     pid_t childpidRight;
 
      //Check the number of arguments
      //Check if our # of process is valid
-     //Check if sleep time is valid
      if (argc > 2 ||
          argc < 2 ||
          (argc == 2 &&
          (atoi(argv[1]) < 1 ||
-         atoi(argv[1]) > 10)) ||
-         (argc == 3 &&
-         (atoi(argv[2]) < 1 ||
-         atoi(argv[2]) > 20))) {
+         atoi(argv[1]) > 10))) {
 
-         printf("\n Usage: %s [# of Processes < 5] \n", argv[0]);
+         printf("\n Usage: %s [# of Levels < 5] \n", argv[0]);
          exit(1);
      }
 
-     //n is num process
-     //m is sleep time
-     n = atoi(argv[1]);
-     if(argc > 2) m = atoi(argv[2]);
-     else m = 0;
+     //numLevels is the number of levels we want to go down
+     numLevels = atoi(argv[1]);
 
-     //Set our child pid
-     childpid = 0;
+     //Set our child pid's
+     childpidLeft = 0;
+     childpidRight = 0 ;
+
+     //Print our Text Header
+     printf("%-25s%-20s%-10s%-10s%-10s\n", "Level", "Procs", "Parent", "Child1", "Child 2");
+     printf("%-25s%-20s%-10s%-10s%-10s\n", "No.", "ID", "ID", "ID", "ID");
+
      //Loop through and create our children
-     for(i = 0; i < n; i++) if(childpid = fork()) break;
+     int i;
+     for(i = 0; i < numLevels; i++) {
 
+        //Create two childrens per node
+         childpidLeft = fork();
+         childpidRight = fork();
 
-     else if (childpid == -1) {
-         perror ("\n The fork failed\n");
-         exit(1);
-     }
+         if (childpidLeft == -1) {
+             perror ("\n The left fork failed\n");
+             exit(1);
+         }
+         if (childpidRight == -1) {
+             perror ("\n The right fork failed\n");
+             exit(1);
+         }
 
-     /* since each process has a different childpid, using the childpid
-     as the seed number will restart the random function.
-     Therefore, each process will have a different sleeptime
-     */
-     seed = (int)(getpid() + childpid);
-     srand(seed);
-
-     //Sleep if we have sleep time
-     if(argc > 2) {
-         sleeptime = (rand() % m) + 1;
-         sleep(sleeptime);
-     }
-
-     //Output to the user
-     printf("\n %d: process ID:%6ld parent ID:%6ld childID:%6ld", i, (long)getpid(), (long)getppid(), (long)childpid);
-
-     //Print sleep text if we slept
-     if(argc > 2) {
-       printf (" sleep = %d\n", sleeptime);
+         //Output to the user
+         printf("\n %d: process ID:%6ld parent ID:%6ld childID:%6ld", i, (long)getpid(), (long)getppid(), (long)childpidLeft);
+         printf("\n %d: process ID:%6ld parent ID:%6ld childID:%6ld", i, (long)getpid(), (long)getppid(), (long)childpidRight);
      }
 
     //Finish up and exit
