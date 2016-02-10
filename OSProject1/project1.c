@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
      for(i = 0; i < numLevels; i++) {
 
           //Create two childrens per node
+          //And, If they are children
+          //Enter the if
            if((childpidLeft = fork()) == 0 || (childpidRight = fork()) == 0) {
 
              //Error check our children
@@ -66,13 +68,13 @@ int main(int argc, char *argv[])
                  exit(1);
              }
 
-             //Increase our level
+             //Increase their level
              level++;
 
              //Save our parent pid
              parentpid = getppid();
 
-             //reset our child Pids
+             //reset our children's child Pids
              childpidLeft = 0;
              childpidRight = 0;
 
@@ -84,7 +86,7 @@ int main(int argc, char *argv[])
               continue;
            }
 
-           //then we need to break
+           //then we are parent, we need to break
             break;
         }
 
