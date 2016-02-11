@@ -164,6 +164,10 @@ public class capitalizer {
 				//read in the line
 				String newLine = scan.nextLine();
 
+				//Do Comment checking for //, /*, and */ here,
+				//Simply get a substring, or set a comment boolean
+				
+
 				//Procedd only if it is not commented
 				if(!newLine.contains("//")) {
 
@@ -226,6 +230,9 @@ public class capitalizer {
 
 			//scanner failed
 			System.out.println("There was an error reading/writing the file...Thank you for using the Capitalizer Application!");
+
+			//Exit the app
+			System.exit(1);
 		}
 	}
 
