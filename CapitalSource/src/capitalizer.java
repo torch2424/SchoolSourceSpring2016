@@ -94,12 +94,15 @@ public class capitalizer {
 			//Set a variable for if we chose a valid file
 			boolean validFile = false;
 
-			while(!validFile) {
+			//Our file we shall be choosing
+			File selectedFile = null;
+
+			while(!validFile || selectedFile == null) {
 
 					if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 					{
 							// Get the file
-							File selectedFile = chooser.getSelectedFile();
+							selectedFile = chooser.getSelectedFile();
 
 							System.out.println("You selected the file: " + selectedFile.getName());
 
