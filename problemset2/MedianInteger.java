@@ -39,7 +39,7 @@ public class MedianInteger {
             //Sorted, and acces both the tail and head
             ArrayList<Integer> minHeap = new ArrayList<>();
             ArrayList<Integer> maxHeap = new ArrayList<>();
-            int median = 0;
+            float median = 0;
 
             //Create a scanner
             Scanner scan = null;
@@ -100,9 +100,11 @@ public class MedianInteger {
                             Collections.sort(maxHeap);
 
                             //Find our median
+                            //Odd number size means the first or last element
+                            //Even number, the mean of their first/last element
                             if(minHeap.size() > maxHeap.size()) median = minHeap.get(minHeap.size() - 1);
-                            else if(maxHeap.size() > minHeap.size()) median = maxHeap.get(0);
-                            else median = minHeap.get(minHeap.size() - 1) + maxHeap.get(0) / 2;
+                            else if(minHeap.size() < maxHeap.size()) median = maxHeap.get(0);
+                            else median = (float) (minHeap.get(minHeap.size() - 1) + maxHeap.get(0)) / 2.0f;
                         }
 
                         //Print to the user the median
@@ -119,7 +121,11 @@ public class MedianInteger {
 
             //Finish up and exit
             scan.close();
+            System.out.println();
+            System.out.println();
             System.out.println("Thank you for using the " + appName + " !");
+            System.out.println();
+            System.out.println();
 
       }
 
@@ -149,6 +155,8 @@ public class MedianInteger {
     							selectedFile = chooser.getSelectedFile();
 
     							System.out.println("You selected the file: " + selectedFile.getName());
+
+                                if(files.size() > -1) System.out.println("Select \"Cancel\" once you are done choosing your files.");
 
     							//Check if the file is the correct source code
                                 //By looping through our endings
