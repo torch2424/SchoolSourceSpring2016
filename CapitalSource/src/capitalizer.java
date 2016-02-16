@@ -349,7 +349,8 @@ public class capitalizer {
 				else if(commented.indexOf("/**") > -1) {
 
 					//Grab everything in front
-					commented = commented.split("\\/\\*\\*")[0];
+					if(commented.split("\\/\\*\\*").length > 0) commented = commented.split("\\/\\*\\*")[0];
+					else commented = "";
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
@@ -357,7 +358,8 @@ public class capitalizer {
 				else {
 
 					//Grab everything in front
-					commented = commented.split("\\/\\*")[0];
+					if(commented.split("\\/\\*").length > 0) commented = commented.split("\\/\\*")[0];
+					else commented = "";
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
