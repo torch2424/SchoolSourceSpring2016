@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Arrays;
 
 import javax.swing.JFileChooser;
 
@@ -158,37 +159,82 @@ public class capitalizer {
 			outputFile.delete();
 			FileWriter writer = new FileWriter(outputFile, true);
 
+			//Booleans for if we are in a comment block
+			boolean setComment = false;
+			boolean inComment = false;
+
 			//loop until no more lines
 			while(scan.hasNextLine()) {
 
 				//read in the line
 				String newLine = scan.nextLine();
 
-				//Do Comment checking for //, /*, and */ here,
-				//Simply get a substring, or set a comment boolean
-				
+				/* Do Comment checking for \\, \*, \**, and \* here,
+				Simply get a substring, or set a comment boolean
+				Worst case scenario int j, \* Hello *\ i = 0; \\Hello Again
+				So check in that order
+				replaced / with \ above for this comment block*/
+				while(newLine.indexOf("//|/*|/**|*/") > -1) {
 
-				//Procedd only if it is not commented
-				if(!newLine.contains("//")) {
+					//There is a comment!
 
-					//find if the line has any reserved words
-					for(String key : reserved.keySet()) {
+					//Check if there is a comment block beginning
+					if(newLine.indexOf("/*|/**") > -1) {
 
-							//Count the number of times it occurs
-							Pattern regex = Pattern.compile(key + "[//{//( ]|" + key + "$");
-								Matcher m = regex.matcher(newLine);
-								int count = 0;
-								while (m.find()){
+						//Check if it also ends on the same line
+						if(newLine.indexOf("*/") > -1)
+						{
+							//If it does simply pull the comments out
+							newLine = newLine.substring(newLine.indexOf("/*|/**"), newLine.indexOf("*/"));
 
-								//capitalize the sub string
-								newLine = newLine.replaceFirst(key, key.toUpperCase());
+						}
+						else {
 
-									count++;
-								}
+							//Grab everything in front
+							newLine = newLine.split("/*")[0];
 
-							//Increase the value of the key at that point
-							reserved.put(key, reserved.get(key) + count);
+							//And trigger setting the comment block after we parse the line
+							setComment = true;
+						}
 					}
+
+					//Check if there is a comment block beginning
+					if(newLine.indexOf("*/") > -1) {
+
+						//Grab everything behind it
+						newLine = newLine.split("*/")[newLine.split("*/").length - 1];
+
+						//And set the comment booleans to false
+						setComment = false;
+						inComment = false;
+					}
+
+
+					//Check if it is a single line
+					if(newLine.indexOf("//") > -1) {
+
+						//Simply make newline everything before the comment
+						newLine = newLine.split("//")[0];
+					}
+				}
+
+				//find if the line has any reserved words
+				for(String key : reserved.keySet()) {
+
+						//Count the number of times it occurs
+						Pattern regex = Pattern.compile(key + "[//{//( ]|" + key + "$");
+							Matcher m = regex.matcher(newLine);
+							int count = 0;
+							while (m.find()){
+
+							//capitalize the sub string
+							newLine = newLine.replaceFirst(key, key.toUpperCase());
+
+								count++;
+							}
+
+						//Increase the value of the key at that point
+						reserved.put(key, reserved.get(key) + count);
 				}
 
 				//Lastly print the line back to our output
@@ -236,7 +282,7 @@ public class capitalizer {
 		}
 	}
 
-
+	//Function to set our reserved words to a hash map
 	private static HashMap<String, Integer> setKeys(HashMap<String, Integer> map, String[] array) {
 
 		//Simply loop through the array and add the value to the map
@@ -249,5 +295,7 @@ public class capitalizer {
 		//return the map
 		return map;
 	}
+
+
 
 }
