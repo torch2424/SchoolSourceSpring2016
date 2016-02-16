@@ -1,12 +1,8 @@
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Scanner;
 import javax.swing.JFileChooser;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MedianInteger {
 
@@ -41,9 +37,9 @@ public class MedianInteger {
             //Create our two heaps
             //Going to use array list, as we can keep them
             //Sorted, and acces both the tail and head
-            ArrayList<Integer> minHeap;
-            ArrayList<Integer> maxHeap;
-            int median;
+            ArrayList<Integer> minHeap = new ArrayList<>();
+            ArrayList<Integer> maxHeap = new ArrayList<>();
+            int median = 0;
 
             //Create a scanner
             Scanner scan = null;
@@ -60,6 +56,60 @@ public class MedianInteger {
                     scan = new Scanner(inputFiles.get(i));
 
                     //Loop while the file has lines
+                    while(scan.hasNextLine()) {
+
+                        //Grab the line
+                        String input = scan.nextLine();
+
+                        //Parse the integer
+                        int inputInt = Integer.valueOf(input);
+
+                        //Add is to a heap
+                        if(minHeap.size() < 1 &&
+                        maxHeap.size() < 1) {
+
+                            //Set the median to the integer
+                            median = inputInt;
+
+                            //and add it to the max heap
+                            maxHeap.add(inputInt);
+
+                        }
+                        else {
+
+                            //Add it to the corrct heap
+                            if(inputInt < median) minHeap.add(inputInt);
+                            else maxHeap.add(inputInt);
+
+                            //Check that our heaps are evenly distributed
+                            if(minHeap.size() <= maxHeap.size() - 2) {
+
+                                //Add the least of the max heap to the min heap
+                                minHeap.add(maxHeap.get(0));
+                                maxHeap.remove(0);
+                            }
+                            else if(maxHeap.size() <= minHeap.size() - 2) {
+
+                                //Add the least of the max heap to the min heap
+                                maxHeap.add(minHeap.get(minHeap.size() - 1));
+                                minHeap.remove(minHeap.size() - 1);
+                            }
+
+                            //Sort our heaps
+                            Collections.sort(minHeap);
+                            Collections.sort(maxHeap);
+
+                            //Find our median
+                            if(minHeap.size() > maxHeap.size()) median = minHeap.get(minHeap.size() - 1);
+                            else if(maxHeap.size() > minHeap.size()) median = maxHeap.get(0);
+                            else median = minHeap.get(minHeap.size() - 1) + maxHeap.get(0) / 2;
+                        }
+
+                        //Print to the user the median
+                        System.out.println();
+                        System.out.println("Input Integer: " + Integer.toString(inputInt));
+                        System.out.println("Current Median: " + median);
+                    }
                 }
                 catch(Exception e) {
 
@@ -69,8 +119,7 @@ public class MedianInteger {
 
             //Finish up and exit
             scan.close();
-
-
+            System.out.println("Thank you for using the " + appName + " !");
 
       }
 
