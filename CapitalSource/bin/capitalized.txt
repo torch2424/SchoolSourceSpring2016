@@ -1,111 +1,101 @@
-/****************************************************************/
-/* PROGRAM NAME: lab1.c */
-/* DESCRIPTION: This lab assignment introduces C syntax and use of */
-/* command line arguments */
-/****************************************************************/
+/**************************************************************************/
+/* PROGRAM: project1.c */
+/* DESCRIPTION: This program generates a chain of processes */
+/* using fork(). The number of processes n is a command line argument <= 5. */
+/* They will make two child processes to make a process tree*/
+/*  */
+/**************************************************************************/
 # include <stdio.h>
 # include <stdlib.h>
-# include <time.h>
-
-//argc is the number of arguments, argv is the array of arguments
+# include <sys/types.h>
+# include <unistd.h>
+#include <time.h>   /* Needed FOR STRUCT timespec */
 INT main(INT argc, CHAR *argv[])
 {
+     //Initialize some variables
+     INT numLevels;
+     pid_t childpidLeft;
+     pid_t childpidRight;
 
-	//Check and make sure we have at least two arguments
-	IF (argc != 2) {
-		printf("%s Usage: Need filename and a single arguement that is a number of random elements to generater\n", argv[0]);
-		exit(1);
-	}
-    ELSE IF(atoi(argv[1]) < 1) {
-        printf("%s Usage: Cannot generate less than one random number\n", argv[0]);
-		exit(1);
-    }
+     //Check the number of arguments
+     //Check if our # of process is valid
+     IF (argc > 2 ||
+         argc < 2 ||
+         (argc == 2 &&
+         (atoi(argv[1]) < 1 ||
+         atoi(argv[1]) > 10))) {
 
-    //Our array of randomly given integer arguments
-	//Assignment says we need to name the array randA
-	//Size shall be the number of arguments (-1 since the first argument is file name)
-	//However + 3 to store the largest, smallest, and average values at the end of array
-	//so, + 2
-	INT randA[atoi(argv[1])];
+         printf("\n Usage: %s [# of Levels < 5] \n", argv[0]);
+         exit(1);
+     }
 
-	//Create our variables to store smallest, largets, and average
-	INT large[2];
-	INT small[2];
-	INT average;
-    INT count = 0;
-	INT sumTotal = 0;
+     //numLevels is the number of levels we want to go down
+     numLevels = atoi(argv[1]);
 
-    //our seed
-    srand(time(NULL));
-    //Set the seed
-    rand();
+     //Set our child pid's
+     childpidLeft = 0;
+     childpidRight = 0;
 
-	//Start looping through and grabbing integers
-	INT i;
-	FOR(i = 0; i < atoi(argv[1]); ++i) {
+     //Print our Text Header
+     printf("%-25s%-20s%-10s%-10s%-10s\n", "Level", "Procs", "Parent", "Child1", "Child 2");
+     printf("%-25s%-20s%-10s%-10s%-10s\n", "No.", "ID", "ID", "ID", "ID");
 
-		//Generate a number between -100 and 100
-        INT ran = (rand() % 201) - 100;
+     //Spacing
+     printf("\n");
 
-        //add it to the array
-        randA[i] = ran;
+     //Save our level and parent id here
+     //Since parent can finish before the child
+     INT level = 0;
+     pid_t parentpid = getppid();
 
-		//Add the input int to our sum
-		sumTotal = sumTotal + ran;
+     //Loop through and create our children
+     INT i;
+     FOR(i = 0; i < numLevels; i++) {
 
-        //increase our count
-        count = count + 1;
+          //Create two childrens per node
+          //And, If they are children
+          //Enter the if
+           IF((childpidLeft = fork()) == 0 || (childpidRight = fork()) == 0) {
 
-		//Next check if it is the smalles or the largest
-		//But automatically assign if it is the first run through
-		IF(i == 1) {
+             //Error check our children
+             IF (childpidLeft == -1) {
+                 perror ("\n The left fork failed\n");
+                 exit(1);
+             }
 
-			//assign all of our variables to the first value
-			small[0] = ran;
-			large[0] = ran;
-			average = ran;
+             IF (childpidRight == -1) {
+                 perror ("\n The right fork failed\n");
+                 exit(1);
+             }
 
-            //Also assignt eh first index
-            small[1] = i;
-			large[1] = i;
-		}
-		ELSE {
+             //Increase their level
+             level++;
 
-			//It is not first index so we need to compare things
-			IF(ran < small[0]) {
-				small[0] = ran;
-                small[1] = i;
-			}
-			ELSE IF(ran > large[0]) {
-				large[0] = ran;
-                large[1] = i;
-			}
-		}
+             //Save our parent pid
+             parentpid = getppid();
 
-	}
+             //reset our children's child Pids
+             childpidLeft = 0;
+             childpidRight = 0;
 
-    //loop and print the array
-    INT j;
-    FOR(j = 0; j < atoi(argv[1]); ++j) {
-        printf("\n%i, At randA index: %i\n", randA[j], j);
-    }
+             //sleep a little to avoid child finishing before the parent
+             //Nano sleep will allow us to sleep half a second
+             nanosleep((CONST STRUCT timespec[]){{0, 500000000L}}, NULL);
 
-    //Spacing
-    printf ("\n");
-    printf ("\n");
+             //Continue the loop
+              continue;
+           }
 
-	//Now we are done looping, we can calculate our true average
-	average = sumTotal / count;
+           //then we are parent, we need to break
+            break;
+        }
 
-	//output our results
-	printf("\nLargest value is: %i, At randA index: %i\n", large[0], large[1]);
-	printf("\nSmallest value is: %i, At randA index: %i\n", small[0], small[1]);
-	printf("\nAverage of the values is: %i", average);
+         //Output to the user
+         printf("%-25d%-20ld%-10ld%-10ld%-10ld\n", level, (long)getpid(), (long)parentpid, (long)childpidLeft, (long)childpidRight);
 
-
-	//Finish up and exit
-	printf ("\n");
-	printf("\nThank you! Have a nice day!\n");
-	printf ("\n");
-	exit(0);
+    //Finish up and exit
+    //Make parent wait here for cleaner output
+    //And to hang the terminal until everything has finished
+     wait();
+ 	  exit(0);
 }

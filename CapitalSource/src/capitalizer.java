@@ -1,17 +1,12 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Arrays;
-
 import javax.swing.JFileChooser;
-
-/**
- *
- */
 
 /**
  * @author torch2424
@@ -77,6 +72,10 @@ public class capitalizer {
 		"group", "into", "join", "let", "orderby", "partial", "partial",
 		"remove", "select", "set", "value", "var", "where",
 		"where", "yield"};
+
+	//Booleans for if we are in a comment block
+	static boolean setComment;
+	static boolean inComment;
 
 
 
@@ -160,8 +159,8 @@ public class capitalizer {
 			FileWriter writer = new FileWriter(outputFile, true);
 
 			//Booleans for if we are in a comment block
-			boolean setComment = false;
-			boolean inComment = false;
+			setComment = false;
+			inComment = false;
 
 			//loop until no more lines
 			while(scan.hasNextLine()) {
@@ -169,77 +168,63 @@ public class capitalizer {
 				//read in the line
 				String newLine = scan.nextLine();
 
-				/* Do Comment checking for \\, \*, \**, and \* here,
-				Simply get a substring, or set a comment boolean
-				Worst case scenario int j, \* Hello *\ i = 0; \\Hello Again
-				So check in that order
-				replaced / with \ above for this comment block*/
-				while(newLine.indexOf("//|/*|/**|*/") > -1) {
-
-					//There is a comment!
-
-					//Check if there is a comment block beginning
-					if(newLine.indexOf("/*|/**") > -1) {
-
-						//Check if it also ends on the same line
-						if(newLine.indexOf("*/") > -1)
-						{
-							//If it does simply pull the comments out
-							newLine = newLine.substring(newLine.indexOf("/*|/**"), newLine.indexOf("*/"));
-
-						}
-						else {
-
-							//Grab everything in front
-							newLine = newLine.split("/*")[0];
-
-							//And trigger setting the comment block after we parse the line
-							setComment = true;
-						}
-					}
-
-					//Check if there is a comment block beginning
-					if(newLine.indexOf("*/") > -1) {
-
-						//Grab everything behind it
-						newLine = newLine.split("*/")[newLine.split("*/").length - 1];
-
-						//And set the comment booleans to false
-						setComment = false;
-						inComment = false;
-					}
+				//Get an uncommented string
+				String unCommented = unCommentString(newLine);
 
 
-					//Check if it is a single line
-					if(newLine.indexOf("//") > -1) {
 
-						//Simply make newline everything before the comment
-						newLine = newLine.split("//")[0];
+				if(!inComment) {
+
+					//find if the line has any reserved words
+					for(String key : reserved.keySet()) {
+
+							//Count the number of times it occurs
+							Pattern regex = Pattern.compile(key + "[//{//( ]|" + key + "$");
+								Matcher m = regex.matcher(unCommented);
+								int count = 0;
+								while (m.find()){
+
+								//capitalize the sub string
+								unCommented = unCommented.replaceFirst(key, key.toUpperCase());
+
+									count++;
+								}
+
+							//Increase the value of the key at that point
+							reserved.put(key, reserved.get(key) + count);
 					}
 				}
 
-				//find if the line has any reserved words
-				for(String key : reserved.keySet()) {
+				//Rebuild our string to be written
+				//Our final string to be written
+				String finalString = "";
+				//Subtract the index of uncommented everytime there is not a match
+				int noMatch = 0;
+				for(int i = 0; i < newLine.length(); i ++) {
 
-						//Count the number of times it occurs
-						Pattern regex = Pattern.compile(key + "[//{//( ]|" + key + "$");
-							Matcher m = regex.matcher(newLine);
-							int count = 0;
-							while (m.find()){
+					//Check if uncomment has something that is uppercased that newline doesnt
+					if(newLine.substring(i, i + 1).equalsIgnoreCase(unCommented.substring(i - noMatch, i + 1 - noMatch))) {
 
-							//capitalize the sub string
-							newLine = newLine.replaceFirst(key, key.toUpperCase());
+						//Add the uncommented line
+						finalString = finalString + unCommented.substring(i - noMatch, i + 1 - noMatch);
+					}
+					else {
 
-								count++;
-							}
+						//Add the new line
+						finalString = finalString + newLine.substring(i, i + 1);
 
-						//Increase the value of the key at that point
-						reserved.put(key, reserved.get(key) + count);
+						//And increase noMatch
+						noMatch++;
+					}
 				}
 
 				//Lastly print the line back to our output
-				writer.write(newLine);
+				writer.write(finalString);
 				writer.write(System.getProperty("line.separator"));
+
+				//If we need to set that we are in a comment block
+				//Do it now
+				if(setComment) inComment = true;
 			}
 
 			//Output all of the reserved words we found
@@ -296,6 +281,79 @@ public class capitalizer {
 		return map;
 	}
 
+
+	//Function to "Uncomment" a string
+	private static String unCommentString(String commented) {
+
+		/* Do Comment checking for \\, \*, \**, and \* here,
+		Simply get a substring, or set a comment boolean
+		Worst case scenario int j, \* int Hello *\ i = 0; \\int Hello Again
+		So check in that order
+		replaced / with \ above for this comment block*/
+
+		//First check if we are currently in a comment
+		if(inComment) {
+
+			//Check if there is a comment block ending
+			if(commented.indexOf("*/") > -1) {
+
+				//Grab everything behind it
+				commented = commented.split("*/")[commented.split("*/").length - 1];
+
+				//And set the comment booleans to false
+				setComment = false;
+				inComment = false;
+			}
+		}
+
+		//Loop while we find comments, and we are not in a comment
+		while(commented.indexOf("//|/*|/**|*/") > -1 && !inComment) {
+
+			//There is a comment!
+
+			//Check if there is a comment block beginning
+			if(commented.indexOf("/*|/**") > -1) {
+
+				//Check if it also ends on the same line
+				if(commented.indexOf("*/") > -1)
+				{
+					//If it does simply pull the comments out
+					commented = commented.substring(commented.indexOf("/*|/**"), commented.indexOf("*/"));
+
+				}
+				else {
+
+					//Grab everything in front
+					commented = commented.split("/*")[0];
+
+					//And trigger setting the comment block after we parse the line
+					setComment = true;
+				}
+			}
+
+			//Check if there is a comment block ending
+			if(commented.indexOf("*/") > -1) {
+
+				//Grab everything behind it
+				commented = commented.split("*/")[commented.split("*/").length - 1];
+
+				//And set the comment booleans to false
+				setComment = false;
+				inComment = false;
+			}
+
+
+			//Check if it is a single line
+			if(commented.indexOf("//") > -1) {
+
+				//Simply make newline everything before the comment
+				commented = commented.split("//")[0];
+			}
+		}
+
+		//Finally return the uncommented string
+		return commented;
+	}
 
 
 }

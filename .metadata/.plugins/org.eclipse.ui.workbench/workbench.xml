@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<workbench progressCount="6" version="2.0">
+<workbench progressCount="3" version="2.0">
 <workbenchAdvisor/>
 <window height="768" maximized="true" width="1020" x="768" y="30">
 <fastViewData fastViewLocation="1024"/>
@@ -14,9 +14,11 @@
 <coolItem id="org.eclipse.debug.ui.launchActionSet" itemType="typeToolBarContribution" x="58" y="28"/>
 <coolItem id="org.eclipse.debug.ui.main.toolbar" itemType="typeToolBarContribution" x="-1" y="-1"/>
 <coolItem id="org.eclipse.search.searchActionSet" itemType="typeToolBarContribution" x="58" y="28"/>
+<coolItem id="org.eclipse.ui.edit.text.actionSet.presentation" itemType="typeToolBarContribution" x="66" y="28"/>
 <coolItem id="group.nav" itemType="typeGroupMarker"/>
 <coolItem id="org.eclipse.ui.workbench.navigate" itemType="typeToolBarContribution" x="230" y="28"/>
 <coolItem id="group.editor" itemType="typeGroupMarker"/>
+<coolItem id="org.eclipse.ui.DefaultTextEditor" itemType="typeToolBarContribution" x="-1" y="-1"/>
 <coolItem id="group.help" itemType="typeGroupMarker"/>
 <coolItem id="org.eclipse.ui.workbench.help" itemType="typeToolBarContribution" x="-1" y="-1"/>
 </coolbarLayout>
@@ -25,10 +27,21 @@
 <editorArea activeWorkbook="DefaultEditorWorkbook">
 <info part="DefaultEditorWorkbook">
 <folder appearance="1" expanded="2">
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+<part id="1"/>
+</presentation>
 </folder>
 </info>
 </editorArea>
+<editor id="org.eclipse.ui.DefaultTextEditor" name="capitalizer.java" partName="capitalizer.java" title="capitalizer.java" tooltip="/home/aaron/Source/SchoolSourceSpring2016/CapitalSource/src/capitalizer.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" uri="file:/home/aaron/Source/SchoolSourceSpring2016/CapitalSource/src/capitalizer.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1949" selectionTopPixel="4766"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.ui.DefaultTextEditor" name="capitalizer.java" partName="capitalizer.java" path="/home/aaron/Source/SchoolSourceSpring2016/CapitalSource/src/capitalizer.java" title="capitalizer.java" tooltip="CapitalSource/src/capitalizer.java" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/CapitalSource/src/capitalizer.java"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="255" selectionTopPixel="907"/>
+</editor>
 </editors>
 <views>
 <view id="org.eclipse.ui.navigator.ProjectExplorer" partName="Project Explorer">
@@ -50,7 +63,7 @@
 <viewState/>
 </view>
 </views>
-<perspectives activePart="org.eclipse.ui.navigator.ProjectExplorer" activePerspective="org.eclipse.ui.resourcePerspective">
+<perspectives activePart="org.eclipse.ui.DefaultTextEditor" activePerspective="org.eclipse.ui.resourcePerspective">
 <perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
 <descriptor class="org.eclipse.ui.internal.ide.application.ResourcePerspective" id="org.eclipse.ui.resourcePerspective" label="Resource"/>
 <alwaysOnActionSet id="org.eclipse.ui.cheatsheets.actionSet"/>
@@ -124,7 +137,24 @@
 </perspective>
 </perspectives>
 <workingSets/>
-<navigationHistory/>
+<navigationHistory>
+<editors>
+<editor factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.ui.DefaultTextEditor" uri="file:/home/aaron/Source/SchoolSourceSpring2016/CapitalSource/src/capitalizer.java"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.ui.DefaultTextEditor" path="/CapitalSource/src/capitalizer.java"/>
+</editors>
+<item historyLabel="capitalizer.java" index="0">
+<position info="not_deleted" x="1949" y="0"/>
+</item>
+<item historyLabel="capitalizer.java" index="1">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="capitalizer.java" index="1">
+<position info="not_deleted" x="217" y="0"/>
+</item>
+<item active="true" historyLabel="capitalizer.java" index="1">
+<position info="not_deleted" x="0" y="1"/>
+</item>
+</navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
 </page>
 <workbenchWindowAdvisor/>
@@ -140,5 +170,12 @@
 </trimArea>
 </trimLayout>
 </window>
-<mruList/>
+<mruList>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.ui.DefaultTextEditor" name="capitalizer.java" tooltip="CapitalSource/src/capitalizer.java">
+<persistable path="/CapitalSource/src/capitalizer.java"/>
+</file>
+<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.ui.DefaultTextEditor" name="capitalizer.java" tooltip="/home/aaron/Source/SchoolSourceSpring2016/CapitalSource/src/capitalizer.java">
+<persistable uri="file:/home/aaron/Source/SchoolSourceSpring2016/CapitalSource/src/capitalizer.java"/>
+</file>
+</mruList>
 </workbench>
