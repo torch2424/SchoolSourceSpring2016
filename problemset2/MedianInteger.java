@@ -18,7 +18,7 @@ public class MedianInteger {
 
             //Introudce program to the user
             System.out.println("Welcome to the " + appName + " !");
-            System.out.println("Please enter a ");
+            System.out.print("Please enter a ");
 
             //Loop through our endings
             for(int i = 0; i < endings.length; ++i) {
