@@ -301,7 +301,7 @@ public class capitalizer {
 			if(commented.indexOf("*/") > -1) {
 
 				//Grab everything behind it
-				commented = commented.split("*/")[commented.split("*/").length - 1];
+				commented = commented.split("\\*\\/")[commented.split("\\*\\/").length - 1];
 
 				//And set the comment booleans to false
 				setComment = false;
@@ -315,8 +315,6 @@ public class capitalizer {
 		commented.indexOf("/*") > -1 ||
 		commented.indexOf("/**") > -1 ||
 		commented.indexOf("*/") > -1)) {
-
-			System.out.println("hiiiii");
 
 			//There is a comment!
 
@@ -346,7 +344,7 @@ public class capitalizer {
 				else if(commented.indexOf("/*") > -1) {
 
 					//Grab everything in front
-					commented = commented.split("/*")[0];
+					commented = commented.split("\\/\\*")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
@@ -354,7 +352,7 @@ public class capitalizer {
 				else {
 
 					//Grab everything in front
-					commented = commented.split("/**")[0];
+					commented = commented.split("\\/\\*\\*")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
@@ -365,7 +363,7 @@ public class capitalizer {
 			if(commented.indexOf("*/") > -1) {
 
 				//Grab everything behind it
-				commented = commented.split("*/")[commented.split("*/").length - 1];
+				commented = commented.split("\\*\\/")[commented.split("\\*\\/").length - 1];
 
 				//And set the comment booleans to false
 				setComment = false;
@@ -377,7 +375,7 @@ public class capitalizer {
 			if(commented.indexOf("//") > -1) {
 
 				//Simply make newline everything before the comment
-				commented = commented.split("//")[0];
+				commented = commented.split("\\/\\/")[0];
 			}
 		}
 

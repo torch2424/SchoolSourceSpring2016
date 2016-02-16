@@ -73,7 +73,7 @@ PUBLIC CLASS capitalizer {
 		"remove", "select", "set", "value", "var", "where",
 		"where", "yield"};
 
-	//Booleans FOR IF we are in a comment block
+	//Booleans for if we are in a comment block
 	STATIC BOOLEAN setComment;
 	STATIC BOOLEAN inComment;
 
@@ -91,7 +91,7 @@ PUBLIC CLASS capitalizer {
 		// Open our file chooser
 		JFileChooser chooser = NEW JFileChooser();
 
-			//Set a variable FOR IF we chose a valid file
+			//Set a variable for if we chose a valid file
 			BOOLEAN validFile = false;
 
 			//Our file we shall be choosing
@@ -106,7 +106,7 @@ PUBLIC CLASS capitalizer {
 
 							System.out.println("You selected the file: " + selectedFile.getName());
 
-							//Check IF the file is the correct source code
+							//Check if the file is the correct source code
 							IF(!selectedFile.getName().endsWith(".java") &&
 									!selectedFile.getName().endsWith(".c") &&
 									!selectedFile.getName().endsWith(".cpp") &&
@@ -151,14 +151,14 @@ PUBLIC CLASS capitalizer {
 			//Create a scanner and read in every line and capitalize the reserved words
 			Scanner scan = NEW Scanner(selectedFile);
 
-			//Create our FileWriter and prINT to another file
+			//Create our FileWriter and print to another file
 			//First create the File, using the directory the user launched the app
 			File outputFile = NEW File(System.getProperty("user.dir") + "/capitalized.txt");
 			//Delete the file so we can re-write it
 			outputFile.delete();
 			FileWriter writer = NEW FileWriter(outputFile, true);
 
-			//Booleans FOR IF we are in a comment block
+			//Booleans for if we are in a comment block
 			setComment = false;
 			inComment = false;
 
@@ -175,7 +175,7 @@ PUBLIC CLASS capitalizer {
 
 				IF(!inComment) {
 
-					//find IF the line has any reserved words
+					//find if the line has any reserved words
 					FOR(String key : reserved.keySet()) {
 
 							//Count the number of times it occurs
@@ -190,19 +190,19 @@ PUBLIC CLASS capitalizer {
 									count++;
 								}
 
-							//Increase the value of the key at that poINT
+							//Increase the value of the key at that point
 							reserved.put(key, reserved.get(key) + count);
 					}
 				}
 
 				//Rebuild our string to be written
-				//Our FINAL string to be written
+				//Our final string to be written
 				String finalString = "";
 				//the index of the uncommented string
 				INT unCommentedIndex = 0;
 				FOR(INT i = 0; i < newLine.length() && newLine.length() > 2 && unCommented.length() > 2; ++i) {
 
-					//Check IF uncomment has something that is uppercased that newline doesnt
+					//Check if uncomment has something that is uppercased that newline doesnt
 					IF(unCommentedIndex < unCommented.length() &&
 					newLine.substring(i, i + 1).equalsIgnoreCase(unCommented.substring(unCommentedIndex, unCommentedIndex + 1))) {
 
@@ -214,13 +214,13 @@ PUBLIC CLASS capitalizer {
 					}
 					ELSE {
 
-						//Add the NEW line
+						//Add the new line
 						finalString = finalString + newLine.substring(i, i + 1);
 					}
 				}
 
-				//Lastly prINT the line back to our output
-				//If FINAL string is empty, prINT the newLine
+				//Lastly print the line back to our output
+				//If final string is empty, print the newLine
 				IF(finalString.length() > 0) writer.write(finalString);
 				ELSE writer.write(newLine);
 				writer.write(System.getProperty("line.separator"));
@@ -239,10 +239,10 @@ PUBLIC CLASS capitalizer {
 			LONG numOccurences = 0;
 			FOR(String key : reserved.keySet()) {
 
-				//Output the key and the value IF the value is greater than zero
+				//Output the key and the value if the value is greater than zero
 				IF(reserved.get(key) > 0) {
 
-					//PrINT out the word
+					//Print out the word
 					System.out.println(key + ":" + reserved.get(key));
 
 					//Increase our counters
@@ -280,7 +280,7 @@ PUBLIC CLASS capitalizer {
 			map.put(array[i], 0);
 		}
 
-		//RETURN the map
+		//return the map
 		RETURN map;
 	}
 
@@ -288,45 +288,43 @@ PUBLIC CLASS capitalizer {
 	//Function to "Uncomment" a string
 	PRIVATE STATIC String unCommentString(String commented) {
 
-		/* Do Comment checking FOR \\, \*, \**, and \* here,
-		Simply get a substring, or set a comment BOOLEAN
-		Worst CASE scenario INT j, \* INT Hello *\ i = 0; \\INT Hello Again
+		/* Do Comment checking for \\, \*, \**, and \* here,
+		Simply get a substring, or set a comment boolean
+		Worst case scenario int j, \* int Hello *\ i = 0; \\int Hello Again
 		So check in that order
 		replaced / with \ above FOR THIS comment block*/
 
-		//First check IF we are currently in a comment
+		//First check if we are currently in a comment
 		IF(inComment) {
 
-			//Check IF there is a comment block ending
-			IF(commented.indexOf("*/") > -1) {
+			//Check if there is a comment block ending
+			if(commented.indexOf("*/") > -1) {
 
 				//Grab everything behind it
-				commented = commented.split("*/")[commented.split("*/").length - 1];
+				commented = commented.split("\\*\\/")[commented.split("\\*\\/").length - 1];
 
-				//And set the comment booleans to FALSE
+				//And set the comment booleans to false
 				setComment = false;
 				inComment = false;
 			}
 		}
 
-		//Loop WHILE we find comments, and we are not in a comment
+		//Loop while we find comments, and we are not in a comment
 		WHILE(!inComment &&
-		commented.indexOf("//") > -1 &&
-		commented.indexOf("/*") > -1 &&
-		commented.indexOf("/**") > -1 &&
-		commented.indexOf("*/") > -1) {
-
-			System.out.println("hiiiii");
+		(commented.indexOf("//") > -1 ||
+		commented.indexOf("/*") > -1 ||
+		commented.indexOf("/**") > -1 ||
+		commented.indexOf("*/") > -1)) {
 
 			//There is a comment!
 
-			//Check IF there is a comment block beginning
-			//Checking FOR both /* and /**
-			IF(commented.indexOf("/*") > -1 ||
+			//Check if there is a comment block beginning
+			//Checking for both /* and /**
+			if(commented.indexOf("/*") > -1 ||
 			commented.indexOf("/**") > -1) {
 
-				//Check IF it also ends on the same line
-				IF(commented.indexOf("*/") > -1)
+				//Check if it also ends on the same line
+				if(commented.indexOf("*/") > -1)
 				{
 
 					//Need to check which one still
@@ -343,45 +341,45 @@ PUBLIC CLASS capitalizer {
 
 				}
 				//It didnt end on the same line
-				ELSE IF(commented.indexOf("/*") > -1) {
+				else if(commented.indexOf("/*") > -1) {
 
 					//Grab everything in front
-					commented = commented.split("/*")[0];
+					commented = commented.split("\\/\\*")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
 				}
-				ELSE {
+				else {
 
 					//Grab everything in front
-					commented = commented.split("/**")[0];
+					commented = commented.split("\\/\\*\\*")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
 				}
 			}
 
-			//Check IF there is a comment block ending
-			IF(commented.indexOf("*/") > -1) {
+			//Check if there is a comment block ending
+			if(commented.indexOf("*/") > -1) {
 
 				//Grab everything behind it
-				commented = commented.split("*/")[commented.split("*/").length - 1];
+				commented = commented.split("\\*\\/")[commented.split("\\*\\/").length - 1];
 
-				//And set the comment booleans to FALSE
+				//And set the comment booleans to false
 				setComment = false;
 				inComment = false;
 			}
 
 
-			//Check IF it is a single line
+			//Check if it is a single line
 			IF(commented.indexOf("//") > -1) {
 
 				//Simply make newline everything before the comment
-				commented = commented.split("//")[0];
+				commented = commented.split("\\/\\/")[0];
 			}
 		}
 
-		//Finally RETURN the uncommented string
+		//Finally return the uncommented string
 		RETURN commented;
 	}
 
