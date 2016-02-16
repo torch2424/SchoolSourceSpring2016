@@ -1,101 +1,389 @@
-/**************************************************************************/
-/* PROGRAM: project1.c */
-/* DESCRIPTION: This program generates a chain of processes */
-/* using fork(). The number of processes n is a command line argument <= 5. */
-/* They will make two child processes to make a process tree*/
-/*  */
-/**************************************************************************/
-# include <stdio.h>
-# include <stdlib.h>
-# include <sys/types.h>
-# include <unistd.h>
-#include <time.h>   /* Needed FOR STRUCT timespec */
-INT main(INT argc, CHAR *argv[])
-{
-     //Initialize some variables
-     INT numLevels;
-     pid_t childpidLeft;
-     pid_t childpidRight;
+IMPORT java.io.File;
+IMPORT java.io.FileWriter;
+IMPORT java.io.IOException;
+IMPORT java.util.Arrays;
+IMPORT java.util.HashMap;
+IMPORT java.util.Scanner;
+IMPORT java.util.regex.Matcher;
+IMPORT java.util.regex.Pattern;
+IMPORT javax.swing.JFileChooser;
 
-     //Check the number of arguments
-     //Check if our # of process is valid
-     IF (argc > 2 ||
-         argc < 2 ||
-         (argc == 2 &&
-         (atoi(argv[1]) < 1 ||
-         atoi(argv[1]) > 10))) {
+/**
+ * @author torch2424
+ *
+ */
+PUBLIC CLASS capitalizer {
 
-         printf("\n Usage: %s [# of Levels < 5] \n", argv[0]);
-         exit(1);
-     }
+	//Arrays of reserved words and their languages
+	 STATIC FINAL String javaWords[] = { "abstract", "assert", "boolean",
+         "break", "byte", "case", "catch", "char", "class", "const",
+         "continue", "default", "do", "double", "else", "extends", "false",
+         "final", "finally", "float", "for", "goto", "if", "implements",
+         "import", "instanceof", "int", "interface", "long", "native",
+         "new", "null", "package", "private", "protected", "public",
+         "return", "short", "static", "strictfp", "super", "switch",
+         "synchronized", "this", "throw", "throws", "transient", "true",
+         "try", "void", "volatile", "while" };
 
-     //numLevels is the number of levels we want to go down
-     numLevels = atoi(argv[1]);
+	 STATIC FINAL String cWords[] = {"auto", "enum", "restrict", "unsigned", "break", "extern", "return", "void",
+	 "case", "float", "short", "volatile",
+	 "char", "for", "signed", "while",
+	 "const", "goto", "sizeof", "_Bool",
+	 "continue", "if", "static", "_Complex",
+	 "default", "inline", "struct", "_Imaginary",
+	 "do", "int", "switch",
+	 "double", "long", "typedef",
+	 "else", "register", "union"};
 
-     //Set our child pid's
-     childpidLeft = 0;
-     childpidRight = 0;
+	STATIC FINAL String cppWords[] = {"and",  "double",  "not",  "this",
+		"and_eq",  "dynamic_cast",  "not_eq",  "throw",
+		"asm",  "else",  "operator",  "true",
+		"auto",  "enum",  "or",  "try",
+		"bitand",  "explicit",  "or_eq",  "typedef",
+		"bitor",  "export",  "private",  "typeid",
+		"bool",  "extern",  "protected",  "typename",
+		"break",  "false",  "public",  "union",
+		"case",  "float",  "register",  "unsigned",
+		"catch",  "for",  "reinterpret_cast",  "using",
+		"char",  "friend",  "return", "virtual",
+		"class", "goto", "short", "void",
+		"compl", "if", "signed", "volatile",
+		"const", "inline", "sizeof", "wchar_t",
+		"const_cast", "int", "static", "while",
+		"continue", "long", "static_cast", "xor",
+		"default", "mutable", "struct", "xor_eq",
+		"delete", "namespace", "switch",
+		"do", "new", "template"};
 
-     //Print our Text Header
-     printf("%-25s%-20s%-10s%-10s%-10s\n", "Level", "Procs", "Parent", "Child1", "Child 2");
-     printf("%-25s%-20s%-10s%-10s%-10s\n", "No.", "ID", "ID", "ID", "ID");
+	STATIC FINAL String csWords[] = {
+		"abstract", "as", "base", "bool", "break", "byte", "case",
+		"catch", "char", "checked", "class", "const", "continue", "decimal",
+		"default", "delegate", "do", "double", "else", "enum", "event", "explicit",
+		"extern", "false", "finally", "fixed", "float", "for", "foreach", "goto",
+		"if", "implicit", "in", "in", "int", "interface",
+		"internal", "is", "lock", "long", "namespace", "new", "null", "object",
+		"operator", "out", "out", "override", "params",
+		"private", "protected", "public", "readonly", "ref", "return",
+		"sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string",
+		"struct", "switch", "this", "throw", "true", "try", "typeof",
+		"uint", "ulong", "unchecked", "unsafe", "ushort", "using",
+		"virtual", "void", "volatile", "while", "add", "alias", "ascending",
+		"async", "await", "descending", "dynamic", "from", "get", "global",
+		"group", "into", "join", "let", "orderby", "partial", "partial",
+		"remove", "select", "set", "value", "var", "where",
+		"where", "yield"};
 
-     //Spacing
-     printf("\n");
+	//Booleans FOR IF we are in a comment block
+	STATIC BOOLEAN setComment;
+	STATIC BOOLEAN inComment;
 
-     //Save our level and parent id here
-     //Since parent can finish before the child
-     INT level = 0;
-     pid_t parentpid = getppid();
 
-     //Loop through and create our children
-     INT i;
-     FOR(i = 0; i < numLevels; i++) {
 
-          //Create two childrens per node
-          //And, If they are children
-          //Enter the if
-           IF((childpidLeft = fork()) == 0 || (childpidRight = fork()) == 0) {
+	/**
+	 * @param args
+	 */
+	PUBLIC STATIC VOID main(String[] args) {
 
-             //Error check our children
-             IF (childpidLeft == -1) {
-                 perror ("\n The left fork failed\n");
-                 exit(1);
-             }
+		//Introudce program to the user
+		System.out.println("Welcome to the Capitalizer Application!");
+		System.out.println("Please enter a .java, .c, .cpp, or .cs file");
 
-             IF (childpidRight == -1) {
-                 perror ("\n The right fork failed\n");
-                 exit(1);
-             }
+		// Open our file chooser
+		JFileChooser chooser = NEW JFileChooser();
 
-             //Increase their level
-             level++;
+			//Set a variable FOR IF we chose a valid file
+			BOOLEAN validFile = false;
 
-             //Save our parent pid
-             parentpid = getppid();
+			//Our file we shall be choosing
+			File selectedFile = null;
 
-             //reset our children's child Pids
-             childpidLeft = 0;
-             childpidRight = 0;
+			WHILE(!validFile || selectedFile == null) {
 
-             //sleep a little to avoid child finishing before the parent
-             //Nano sleep will allow us to sleep half a second
-             nanosleep((CONST STRUCT timespec[]){{0, 500000000L}}, NULL);
+					IF (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+					{
+							// Get the file
+							selectedFile = chooser.getSelectedFile();
 
-             //Continue the loop
-              continue;
-           }
+							System.out.println("You selected the file: " + selectedFile.getName());
 
-           //then we are parent, we need to break
-            break;
-        }
+							//Check IF the file is the correct source code
+							IF(!selectedFile.getName().endsWith(".java") &&
+									!selectedFile.getName().endsWith(".c") &&
+									!selectedFile.getName().endsWith(".cpp") &&
+									!selectedFile.getName().endsWith(".cs"))
+							{
+								//Wrong file type inform the user
+								System.out.println("Wrong File type! Please select a .java, .c, .cpp, or .cs file");
+							}
+							ELSE validFile = true;
+					}
+					ELSE {
 
-         //Output to the user
-         printf("%-25d%-20ld%-10ld%-10ld%-10ld\n", level, (long)getpid(), (long)parentpid, (long)childpidLeft, (long)childpidRight);
+						//They pressed cancel
+						System.out.println("Thank you FOR using the Capitalizer Application!");
+						//Exit the program
+						System.exit(0);
 
-    //Finish up and exit
-    //Make parent wait here for cleaner output
-    //And to hang the terminal until everything has finished
-     wait();
- 	  exit(0);
+					}
+			}
+
+			//Call the function to read/capitalize/and write the file
+			capitalizeSource(selectedFile);
+
+			//Thank the user
+			System.out.println("Thank you FOR using the Capitalizer Application!");
+	}
+
+	PRIVATE STATIC VOID capitalizeSource(File selectedFile) {
+
+		//They entered the correct file type
+		//create a map to assign our array to
+		HashMap<String, Integer> reserved = NEW HashMap<String, Integer>();
+
+		//Find what file type it was and use the correct array to assign the keys of our map
+		IF(selectedFile.getName().endsWith(".java")) reserved = setKeys(reserved, javaWords);
+		ELSE IF(selectedFile.getName().endsWith(".c")) reserved = setKeys(reserved, cWords);
+		ELSE IF(selectedFile.getName().endsWith(".cpp")) reserved = setKeys(reserved, cppWords);
+		ELSE IF(selectedFile.getName().endsWith(".cs")) reserved = setKeys(reserved, csWords);
+
+		TRY {
+
+			//Create a scanner and read in every line and capitalize the reserved words
+			Scanner scan = NEW Scanner(selectedFile);
+
+			//Create our FileWriter and prINT to another file
+			//First create the File, using the directory the user launched the app
+			File outputFile = NEW File(System.getProperty("user.dir") + "/capitalized.txt");
+			//Delete the file so we can re-write it
+			outputFile.delete();
+			FileWriter writer = NEW FileWriter(outputFile, true);
+
+			//Booleans FOR IF we are in a comment block
+			setComment = false;
+			inComment = false;
+
+			//loop until no more lines
+			WHILE(scan.hasNextLine()) {
+
+				//read in the line
+				String newLine = scan.nextLine();
+
+				//Get an uncommented string
+				String unCommented = unCommentString(newLine);
+
+
+
+				IF(!inComment) {
+
+					//find IF the line has any reserved words
+					FOR(String key : reserved.keySet()) {
+
+							//Count the number of times it occurs
+							Pattern regex = Pattern.compile(key + "[//{//( ]|" + key + "$");
+								Matcher m = regex.matcher(unCommented);
+								INT count = 0;
+								WHILE (m.find()){
+
+								//capitalize the sub string
+								unCommented = unCommented.replaceFirst(key, key.toUpperCase());
+
+									count++;
+								}
+
+							//Increase the value of the key at that poINT
+							reserved.put(key, reserved.get(key) + count);
+					}
+				}
+
+				//Rebuild our string to be written
+				//Our FINAL string to be written
+				String finalString = "";
+				//the index of the uncommented string
+				INT unCommentedIndex = 0;
+				FOR(INT i = 0; i < newLine.length() && newLine.length() > 2 && unCommented.length() > 2; ++i) {
+
+					//Check IF uncomment has something that is uppercased that newline doesnt
+					IF(unCommentedIndex < unCommented.length() &&
+					newLine.substring(i, i + 1).equalsIgnoreCase(unCommented.substring(unCommentedIndex, unCommentedIndex + 1))) {
+
+						//Add the uncommented line
+						finalString = finalString + unCommented.substring(unCommentedIndex, unCommentedIndex + 1);
+
+						//Increase the uncommented index
+						++unCommentedIndex;
+					}
+					ELSE {
+
+						//Add the NEW line
+						finalString = finalString + newLine.substring(i, i + 1);
+					}
+				}
+
+				//Lastly prINT the line back to our output
+				//If FINAL string is empty, prINT the newLine
+				IF(finalString.length() > 0) writer.write(finalString);
+				ELSE writer.write(newLine);
+				writer.write(System.getProperty("line.separator"));
+
+				//If we need to set that we are in a comment block
+				//Do it now
+				IF(setComment) inComment = true;
+			}
+
+			//Output all of the reserved words we found
+			//Output the format
+			System.out.println("Capitalized words (Word, Number of occurences)");
+
+			//Also create some counters
+			INT numWords = 0;
+			LONG numOccurences = 0;
+			FOR(String key : reserved.keySet()) {
+
+				//Output the key and the value IF the value is greater than zero
+				IF(reserved.get(key) > 0) {
+
+					//PrINT out the word
+					System.out.println(key + ":" + reserved.get(key));
+
+					//Increase our counters
+					numWords++;
+					numOccurences = numOccurences + reserved.get(key);
+				}
+			}
+
+			//Output our number of words and occurences
+			System.out.println("Total type of words found: " + Integer.toString(numWords));
+			System.out.println("Total number of words replaced: " + Long.toString(numOccurences));
+
+			//Exit
+			scan.close();
+			writer.close();
+			System.out.println("Output file created at: " + outputFile.getAbsolutePath());
+
+		} CATCH (IOException e) {
+
+			//scanner failed
+			System.out.println("There was an error reading/writing the file...Thank you FOR using the Capitalizer Application!");
+
+			//Exit the app
+			System.exit(1);
+		}
+	}
+
+	//Function to set our reserved words to a hash map
+	PRIVATE STATIC HashMap<String, Integer> setKeys(HashMap<String, Integer> map, String[] array) {
+
+		//Simply loop through the array and add the value to the map
+		FOR(INT i = 0; i < array.length; ++i) {
+
+			//Add it to the map, and init at zero
+			map.put(array[i], 0);
+		}
+
+		//RETURN the map
+		RETURN map;
+	}
+
+
+	//Function to "Uncomment" a string
+	PRIVATE STATIC String unCommentString(String commented) {
+
+		/* Do Comment checking FOR \\, \*, \**, and \* here,
+		Simply get a substring, or set a comment BOOLEAN
+		Worst CASE scenario INT j, \* INT Hello *\ i = 0; \\INT Hello Again
+		So check in that order
+		replaced / with \ above FOR THIS comment block*/
+
+		//First check IF we are currently in a comment
+		IF(inComment) {
+
+			//Check IF there is a comment block ending
+			IF(commented.indexOf("*/") > -1) {
+
+				//Grab everything behind it
+				commented = commented.split("*/")[commented.split("*/").length - 1];
+
+				//And set the comment booleans to FALSE
+				setComment = false;
+				inComment = false;
+			}
+		}
+
+		//Loop WHILE we find comments, and we are not in a comment
+		WHILE(!inComment &&
+		commented.indexOf("//") > -1 &&
+		commented.indexOf("/*") > -1 &&
+		commented.indexOf("/**") > -1 &&
+		commented.indexOf("*/") > -1) {
+
+			System.out.println("hiiiii");
+
+			//There is a comment!
+
+			//Check IF there is a comment block beginning
+			//Checking FOR both /* and /**
+			IF(commented.indexOf("/*") > -1 ||
+			commented.indexOf("/**") > -1) {
+
+				//Check IF it also ends on the same line
+				IF(commented.indexOf("*/") > -1)
+				{
+
+					//Need to check which one still
+					IF(commented.indexOf("/*") > -1) {
+
+						//If it does simply pull the comments out
+						commented = commented.substring(commented.indexOf("/*"), commented.indexOf("*/"));
+					}
+					ELSE {
+
+						//If it does simply pull the comments out
+						commented = commented.substring(commented.indexOf("/**"), commented.indexOf("*/"));
+					}
+
+				}
+				//It didnt end on the same line
+				ELSE IF(commented.indexOf("/*") > -1) {
+
+					//Grab everything in front
+					commented = commented.split("/*")[0];
+
+					//And trigger setting the comment block after we parse the line
+					setComment = true;
+				}
+				ELSE {
+
+					//Grab everything in front
+					commented = commented.split("/**")[0];
+
+					//And trigger setting the comment block after we parse the line
+					setComment = true;
+				}
+			}
+
+			//Check IF there is a comment block ending
+			IF(commented.indexOf("*/") > -1) {
+
+				//Grab everything behind it
+				commented = commented.split("*/")[commented.split("*/").length - 1];
+
+				//And set the comment booleans to FALSE
+				setComment = false;
+				inComment = false;
+			}
+
+
+			//Check IF it is a single line
+			IF(commented.indexOf("//") > -1) {
+
+				//Simply make newline everything before the comment
+				commented = commented.split("//")[0];
+			}
+		}
+
+		//Finally RETURN the uncommented string
+		RETURN commented;
+	}
+
+
 }

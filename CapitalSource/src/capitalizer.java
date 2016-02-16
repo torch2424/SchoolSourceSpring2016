@@ -198,28 +198,31 @@ public class capitalizer {
 				//Rebuild our string to be written
 				//Our final string to be written
 				String finalString = "";
-				//Subtract the index of uncommented everytime there is not a match
-				int noMatch = 0;
-				for(int i = 0; i < newLine.length(); i ++) {
+				//the index of the uncommented string
+				int unCommentedIndex = 0;
+				for(int i = 0; i < newLine.length() && newLine.length() > 2 && unCommented.length() > 2; ++i) {
 
 					//Check if uncomment has something that is uppercased that newline doesnt
-					if(newLine.substring(i, i + 1).equalsIgnoreCase(unCommented.substring(i - noMatch, i + 1 - noMatch))) {
+					if(unCommentedIndex < unCommented.length() &&
+					newLine.substring(i, i + 1).equalsIgnoreCase(unCommented.substring(unCommentedIndex, unCommentedIndex + 1))) {
 
 						//Add the uncommented line
-						finalString = finalString + unCommented.substring(i - noMatch, i + 1 - noMatch);
+						finalString = finalString + unCommented.substring(unCommentedIndex, unCommentedIndex + 1);
+
+						//Increase the uncommented index
+						++unCommentedIndex;
 					}
 					else {
 
 						//Add the new line
 						finalString = finalString + newLine.substring(i, i + 1);
-
-						//And increase noMatch
-						noMatch++;
 					}
 				}
 
 				//Lastly print the line back to our output
-				writer.write(finalString);
+				//If final string is empty, print the newLine
+				if(finalString.length() > 0) writer.write(finalString);
+				else writer.write(newLine);
 				writer.write(System.getProperty("line.separator"));
 
 				//If we need to set that we are in a comment block
@@ -307,24 +310,51 @@ public class capitalizer {
 		}
 
 		//Loop while we find comments, and we are not in a comment
-		while(commented.indexOf("//|/*|/**|*/") > -1 && !inComment) {
+		while(!inComment &&
+		(commented.indexOf("//") > -1 ||
+		commented.indexOf("/*") > -1 ||
+		commented.indexOf("/**") > -1 ||
+		commented.indexOf("*/") > -1)) {
+
+			System.out.println("hiiiii");
 
 			//There is a comment!
 
 			//Check if there is a comment block beginning
-			if(commented.indexOf("/*|/**") > -1) {
+			//Checking for both /* and /**
+			if(commented.indexOf("/*") > -1 ||
+			commented.indexOf("/**") > -1) {
 
 				//Check if it also ends on the same line
 				if(commented.indexOf("*/") > -1)
 				{
-					//If it does simply pull the comments out
-					commented = commented.substring(commented.indexOf("/*|/**"), commented.indexOf("*/"));
 
+					//Need to check which one still
+					if(commented.indexOf("/*") > -1) {
+
+						//If it does simply pull the comments out
+						commented = commented.substring(commented.indexOf("/*"), commented.indexOf("*/"));
+					}
+					else {
+
+						//If it does simply pull the comments out
+						commented = commented.substring(commented.indexOf("/**"), commented.indexOf("*/"));
+					}
+
+				}
+				//It didnt end on the same line
+				else if(commented.indexOf("/*") > -1) {
+
+					//Grab everything in front
+					commented = commented.split("/*")[0];
+
+					//And trigger setting the comment block after we parse the line
+					setComment = true;
 				}
 				else {
 
 					//Grab everything in front
-					commented = commented.split("/*")[0];
+					commented = commented.split("/**")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
