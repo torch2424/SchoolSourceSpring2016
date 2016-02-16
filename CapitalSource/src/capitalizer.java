@@ -171,8 +171,6 @@ public class capitalizer {
 				//Get an uncommented string
 				String unCommented = unCommentString(newLine);
 
-
-
 				if(!inComment) {
 
 					//find if the line has any reserved words
@@ -328,23 +326,30 @@ public class capitalizer {
 				{
 
 					//Need to check which one still
-					if(commented.indexOf("/*") > -1) {
+					if(commented.indexOf("/**") > -1) {
 
 						//If it does simply pull the comments out
-						commented = commented.substring(commented.indexOf("/*"), commented.indexOf("*/"));
+						if(commented.indexOf("/**") == 0 && commented.indexOf("*/") == commented.length() - 1) commented = "";
+						else if(commented.indexOf("/**") == 0) commented = "" + commented.substring(commented.indexOf("*/"), commented.length());
+						else if(commented.indexOf("*/") == commented.length() - 1) commented  = commented.substring(0, commented.indexOf("/**") - 1) + "";
+						else commented = commented.substring(0, commented.indexOf("/**") - 1) + commented.substring(commented.indexOf("*/") + 2, commented.length());
 					}
 					else {
 
 						//If it does simply pull the comments out
-						commented = commented.substring(commented.indexOf("/**"), commented.indexOf("*/"));
+						if(commented.indexOf("/*") == 0 && commented.indexOf("*/") == commented.length() - 1) commented = "";
+						else if(commented.indexOf("/*") == 0) commented = "" + commented.substring(commented.indexOf("*/"), commented.length());
+						else if(commented.indexOf("*/") == commented.length() - 1) commented  = commented.substring(0, commented.indexOf("/*") - 1) + "";
+						else commented = commented.substring(0, commented.indexOf("/*") - 1) + commented.substring(commented.indexOf("*/") + 2, commented.length());
 					}
 
+					//Dont set comment since we already solved it
 				}
 				//It didnt end on the same line
-				else if(commented.indexOf("/*") > -1) {
+				else if(commented.indexOf("/**") > -1) {
 
 					//Grab everything in front
-					commented = commented.split("\\/\\*")[0];
+					commented = commented.split("\\/\\*\\*")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
@@ -352,7 +357,7 @@ public class capitalizer {
 				else {
 
 					//Grab everything in front
-					commented = commented.split("\\/\\*\\*")[0];
+					commented = commented.split("\\/\\*")[0];
 
 					//And trigger setting the comment block after we parse the line
 					setComment = true;
@@ -363,7 +368,8 @@ public class capitalizer {
 			if(commented.indexOf("*/") > -1) {
 
 				//Grab everything behind it
-				commented = commented.split("\\*\\/")[commented.split("\\*\\/").length - 1];
+				if(commented.split("\\*\\/").length == 0) commented = "";
+				else commented = commented.split("\\*\\/")[commented.split("\\*\\/").length - 1];
 
 				//And set the comment booleans to false
 				setComment = false;
