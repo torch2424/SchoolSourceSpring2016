@@ -13,10 +13,10 @@ int main(int argc, char *argv[])
      if (argc <= 1) {
 
          printf("\n Usage: %s text_file\n", *argv);
-         exit(1) ;
+         exit(1);
      }
 
-     execlp("/bin/cat", "cat", argv[1], (char *) NULL);
+     execvp(argv[1], &argv[1]);
      perror ("exec failure");
      exit(1);
 }
