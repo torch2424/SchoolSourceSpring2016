@@ -85,6 +85,7 @@ public class capitalizer {
 	public static void main(String[] args) {
 
 		//Introudce program to the user
+		System.out.println();
 		System.out.println("Welcome to the Capitalizer Application!");
 		System.out.println("Please enter a .java, .c, .cpp, or .cs file");
 
@@ -104,7 +105,9 @@ public class capitalizer {
 							// Get the file
 							selectedFile = chooser.getSelectedFile();
 
+							System.out.println();
 							System.out.println("You selected the file: " + selectedFile.getName());
+							System.out.println();
 
 							//Check if the file is the correct source code
 							if(!selectedFile.getName().endsWith(".java") &&
@@ -113,6 +116,7 @@ public class capitalizer {
 									!selectedFile.getName().endsWith(".cs"))
 							{
 								//Wrong file type inform the user
+								System.out.println();
 								System.out.println("Wrong File type! Please select a .java, .c, .cpp, or .cs file");
 							}
 							else validFile = true;
@@ -120,7 +124,9 @@ public class capitalizer {
 					else {
 
 						//They pressed cancel
+						System.out.println();
 						System.out.println("Thank you for using the Capitalizer Application!");
+						System.out.println();
 						//Exit the program
 						System.exit(0);
 
@@ -131,7 +137,9 @@ public class capitalizer {
 			capitalizeSource(selectedFile);
 
 			//Thank the user
+			System.out.println();
 			System.out.println("Thank you for using the Capitalizer Application!");
+			System.out.println();
 	}
 
 	private static void capitalizeSource(File selectedFile) {
@@ -183,7 +191,7 @@ public class capitalizer {
 								while (m.find()){
 
 								//capitalize the sub string
-								unCommented = unCommented.replaceFirst(key, key.toUpperCase());
+								unCommented = unCommented.replaceFirst(key, capitalizeString(key));
 
 									count++;
 								}
@@ -231,6 +239,7 @@ public class capitalizer {
 			//Output all of the reserved words we found
 			//Output the format
 			System.out.println("Capitalized words (Word, Number of occurences)");
+			System.out.println();
 
 			//Also create some counters
 			int numWords = 0;
@@ -240,8 +249,8 @@ public class capitalizer {
 				//Output the key and the value if the value is greater than zero
 				if(reserved.get(key) > 0) {
 
-					//Print out the word
-					System.out.println(key + ":" + reserved.get(key));
+					//Print out the word, in columns
+					System.out.printf("%-14s%-5s\n", key + ":", reserved.get(key));
 
 					//Increase our counters
 					numWords++;
@@ -250,18 +259,22 @@ public class capitalizer {
 			}
 
 			//Output our number of words and occurences
+			System.out.println();
 			System.out.println("Total type of words found: " + Integer.toString(numWords));
 			System.out.println("Total number of words replaced: " + Long.toString(numOccurences));
 
 			//Exit
 			scan.close();
 			writer.close();
+			System.out.println();
 			System.out.println("Output file created at: " + outputFile.getAbsolutePath());
 
 		} catch (IOException e) {
 
 			//scanner failed
+			System.out.println();
 			System.out.println("There was an error reading/writing the file...Thank you for using the Capitalizer Application!");
+			System.out.println();
 
 			//Exit the app
 			System.exit(1);
@@ -389,6 +402,34 @@ public class capitalizer {
 
 		//Finally return the uncommented string
 		return commented;
+	}
+
+	//Function to capitalize a character
+	private static String capitalizeString(String input) {
+
+		//Capitalize the string by capitalize every character in the string
+		for(int i = 0; i < input.length(); ++i) {
+
+			//Get the character at the index
+			char stringChar = input.charAt(i);
+
+			//Check if it is lowercase
+			if(stringChar >= 97 && stringChar <= 122) {
+
+				//Capitalize the string char by subtracting to its value
+				stringChar = (char) (stringChar - 32);
+
+				//Now set it to the input char
+				StringBuilder newString = new StringBuilder(input);
+				newString.setCharAt(i, stringChar);
+				input = newString.toString();
+
+			}
+		}
+
+		//Simply return the input
+		return input;
+
 	}
 
 
