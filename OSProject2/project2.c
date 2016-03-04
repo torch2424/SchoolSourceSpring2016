@@ -1,101 +1,60 @@
 /**************************************************************************/
-/* PROGRAM: project1.c */
-/* DESCRIPTION: This program generates a chain of processes */
-/* using fork(). The number of processes n is a command line argument <= 5. */
-/* They will make two child processes to make a process tree*/
-/*  */
+/* PROGRAM: parent.c */
+/* DESCRIPTION: This program create 4 child processes and //invoke the exec() system call. The exec() command calls the
+child program along with 4 arguments; sleep time T,one number X, and second number Y.
 /**************************************************************************/
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/types.h>
 # include <unistd.h>
-#include <time.h>   /* Needed for struct timespec */
+#include <time.h>
 int main(int argc, char *argv[])
 {
      //Initialize some variables
-     int numLevels;
-     pid_t childpidLeft;
-     pid_t childpidRight;
+     pid_t p;
+     int n,x,y,t,i;
+     char cNumber[10];
+     n=4;
 
-     //Check the number of arguments
-     //Check if our # of process is valid
-     if (argc > 2 ||
-         argc < 2 ||
-         (argc == 2 &&
-         (atoi(argv[1]) < 1 ||
-         atoi(argv[1]) > 10))) {
-
-         printf("\n Usage: %s [# of Levels < 5] \n", argv[0]);
-         exit(1);
+     if(argc != 4)
+     {
+    printf("\n Please enter three numbers \n");
+    exit(1);
      }
 
-     //numLevels is the number of levels we want to go down
-     numLevels = atoi(argv[1]);
+     x=atoi(argv[1]);
+     y=atoi(argv[2]);
+     t=atoi(argv[3]);
 
-     //Set our child pid's
-     childpidLeft = 0;
-     childpidRight = 0;
+     //Print parent's information
+     printf("\nI am the parent process, the max sleep time is %d and the two numbers are %d and %d\n", t, x, y);
 
-     //Print our Text Header
-     printf("%-25s%-20s%-10s%-10s%-10s\n", "Level", "Procs", "Parent", "Child1", "Child 2");
-     printf("%-25s%-20s%-10s%-10s%-10s\n", "No.", "ID", "ID", "ID", "ID");
+     //Depends on the # of child processes, execute the child      //program that many time
+     for(i=0;i<n;i++) {
 
-     //Spacing
-     printf("\n");
+    sprintf(cNumber,"%d",i);
 
-     //Save our level and parent id here
-     //Since parent can finish before the child
-     int level = 0;
-     pid_t parentpid = getppid();
+    //Different cases based on the result of the fork
+    switch(p=fork())
+    {
+        //If fork() returns a child process then exec
+        case 0:
+    /*Four arguments are child3#,number1,number2,time*/
+    execl("./child","child",cNumber,argv[1],argv[2],argv[3],(char *)0);
+        perror("Exec failure");
+        return(1);
+        case -1:
+        perror("Fork failure!");
+        return(2);
+        default:
+        sleep(2);
+        printf("\nForked child %d\n",p);
 
-     //Loop through and create our children
-     int i;
-     for(i = 0; i < numLevels; i++) {
+    }
+     }
+    //Wait for process to finish
+    wait(p);
 
-          //Create two childrens per node
-          //And, If they are children
-          //Enter the if
-           if((childpidLeft = fork()) == 0 || (childpidRight = fork()) == 0) {
-
-             //Error check our children
-             if (childpidLeft == -1) {
-                 perror ("\n The left fork failed\n");
-                 exit(1);
-             }
-
-             if (childpidRight == -1) {
-                 perror ("\n The right fork failed\n");
-                 exit(1);
-             }
-
-             //Increase their level
-             level++;
-
-             //Save our parent pid
-             parentpid = getppid();
-
-             //reset our children's child Pids
-             childpidLeft = 0;
-             childpidRight = 0;
-
-             //sleep a little to avoid child finishing before the parent
-             //Nano sleep will allow us to sleep half a second
-             nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
-
-             //Continue the loop
-              continue;
-           }
-
-           //then we are parent, we need to break
-            break;
-        }
-
-         //Output to the user
-         printf("%-25d%-20ld%-10ld%-10ld%-10ld\n", level, (long)getpid(), (long)parentpid, (long)childpidLeft, (long)childpidRight);
-
-    //Finish up and exit
-    //Make parent wait here for cleaner output
-    //And to hang the terminal until everything has finished
-     wait();
- 	  exit(0);
+    //exit program
+    exit(1);
 }

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* PROGRAM: project2.c */
+/* PROGRAM: project2Child.c */
 /* DESCRIPTION: This child program will perform mathematic operations  */
 /* and print out the result */
 /*  */
@@ -41,6 +41,9 @@ int main(int argc, char *argv[])
      //Perform our operation
      int result;
 
+     //Print a new line for spacing
+     printf("\n");
+
      if(operation == 0) {
 
          //Addition
@@ -81,6 +84,9 @@ int main(int argc, char *argv[])
      else {
          printf("Incorrect operation number! Please refer to usage. Have a nice day!");
      }
+
+     //Print a new line for spacing
+     printf("\n");
 
      //Finally exit
       exit(0);
