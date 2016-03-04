@@ -16,10 +16,35 @@ int main(int argc, char *argv[])
      char cNumber[10];
      n=4;
 
+     //Check for number of arguments
      if(argc != 4)
      {
-    printf("\n Please enter three numbers \n");
-    exit(1);
+         printf("\n USAGE: Please enter three numbers, the second must be nonzero, and the third, must be greater than zero, and less than 50 \n");
+         exit(1);
+     }
+
+     //Check for characters
+     int count;
+     for(count = 1; count < 4; count++) {
+
+         int value;
+         if(sscanf(argv[count], "%d", &value) != 1) {
+
+             //Error
+             printf("\n USAGE: Please enter three numbers, the second must be nonzero, and the third, must be greater than zero, and less than 50 \n");
+             exit(1);
+         }
+     }
+
+     //Check for zero
+     //As well as sleep bounds
+     if(atoi(argv[2]) == 0 ||
+        atoi(argv[3]) < 1 ||
+        atoi(argv[3]) > 50) {
+
+         //Error
+         printf("\n USAGE: Please enter three numbers, the second must be nonzero, and the third, must be greater than zero, and less than 50 \n");
+         exit(1);
      }
 
      x=atoi(argv[1]);

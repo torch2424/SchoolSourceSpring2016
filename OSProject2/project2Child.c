@@ -27,6 +27,30 @@ int main(int argc, char *argv[])
          exit(1);
      }
 
+     //Check for characters
+     int count;
+     for(count = 2; count < 5; count++) {
+
+         int value;
+         if(sscanf(argv[count], "%d", &value) != 1) {
+
+             //Error
+             printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
+             exit(1);
+         }
+     }
+
+     //Check for zero
+     //As well as sleep bounds
+     if(atoi(argv[3]) == 0 ||
+        atoi(argv[4]) < 1 ||
+        atoi(argv[4]) > 50) {
+
+         //Error
+         printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
+         exit(1);
+     }
+
      //Since it was successful, save our values
      operation = atoi(argv[1]);
      argA = atoi(argv[2]);
