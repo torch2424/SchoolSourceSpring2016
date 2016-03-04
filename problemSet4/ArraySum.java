@@ -1,13 +1,11 @@
 
-import java.io.File;
-import java.io.IOException;
-import javax.swing.JFileChooser;
+import java.io.*;
 import java.util.*;
 
 public class ArraySum {
 
     //Our application name
-    private static final String appName = "Integer Median Application";
+    private static final String appName = "Sum Checker Application";
 
 
       //Main Function
@@ -16,35 +14,32 @@ public class ArraySum {
           //Print some spacing
           System.out.println();
 
-          //Check if we have enough arguments
-          //We need at least three arguments
-          //Two integers that can add, and equal the sum
-          if(args.length < 3) {
+          //Print the welcome
+          System.out.println("Welcome to the " + appName + "!");
+          System.out.println();
 
-              //Print the Usage
-              System.out.println("USAGE: Insert multiple Arguments that will compose an array. the last argument will be the sum we are searching for. Need at least 3 arguments: x, y, and the sum.");
+          //Check the input
+          checkArgs(args);
 
-              System.exit(0);
-          }
+          //Since input is good, start searching
+          System.out.println("Looking for sum...");
+          System.out.println();
 
           //Since we have the right number of arguments,
           //run the program
           //Save our sum
           int inputSum = Integer.valueOf(args[args.length - 1]);
 
-          //place all of arguments into a hash set to avoid duplicates
-          HashSet<Integer> argSet = new HashSet<Integer>();
+          //Place all of our arguments in a list
+          //for checking
+          ArrayList<Integer> argList = new ArrayList<Integer>();
 
           //Loop, until -1 since the sum
           for(int i = 0; i < args.length - 1; ++i) {
 
               //Simply add all to the hash set
-              argSet.add(Integer.valueOf(args[i]));
+              argList.add(Integer.valueOf(args[i]));
           }
-
-          //Place all of our non duplicates into an array list
-          //for checking
-          ArrayList<Integer> argList = new ArrayList<Integer>(argSet);
 
           //Nested Loop through and check the elements
           //By adding it to every element in front of the pivot
@@ -62,7 +57,8 @@ public class ArraySum {
                       Integer.toString(argList.get(i)) + ", and " +
                       Integer.toString(argList.get(j)) + ".");
 
-                      System.exit(0);
+                      //And exit
+                      exitApp();
                   }
               }
           }
@@ -72,6 +68,49 @@ public class ArraySum {
 
           //Print some spacing
           System.out.println();
+      }
+
+
+
+      //Function to check input values
+      public static void checkArgs(String[] args) {
+
+          //Check if we have enough arguments
+          //We need at least three arguments
+          //Two integers that can add, and equal the sum
+          if(args.length < 3) {
+
+              //Print the Usage
+              System.out.println("USAGE: Insert multiple integer arguments that will compose an array. the last argument will be the sum we are searching for. Need at least 3 arguments: x, y, and the sum.");
+
+              //And exit
+              exitApp();
+          }
+
+          //Now check if all arguments are integers
+          //If not, exit
+          for(int i = 0; i < args.length; ++i) {
+
+              try {
+                  Integer.valueOf(args[i]);
+              }
+              catch(NumberFormatException e) {
+
+                  //Print the Usage
+                  System.out.println("USAGE: Insert multiple integer arguments that will compose an array. the last argument will be the sum we are searching for. Need at least 3 arguments: x, y, and the sum.");
+
+                  //And exit
+                  exitApp();
+              }
+          }
+      }
+
+      //Function to exit the app
+      public static void exitApp() {
+
+          //Simply print spacing and exit
+          System.out.println();
+          System.exit(0);
       }
 
 }
