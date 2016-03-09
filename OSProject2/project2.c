@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
      //Check for number of arguments
      if(argc != 4)
      {
-         printf("\n USAGE: Please enter three numbers, the second must be nonzero, and the third, must be greater than zero, and less than 50 \n");
+         printf("\n USAGE: Please enter three numbers, the second should be nonzero, and the third, must be greater than zero, and less than 50 \n");
          exit(1);
      }
 
@@ -31,19 +31,17 @@ int main(int argc, char *argv[])
          if(sscanf(argv[count], "%d", &value) != 1) {
 
              //Error
-             printf("\n USAGE: Please enter three numbers, the second must be nonzero, and the third, must be greater than zero, and less than 50 \n");
+             printf("\n USAGE: Please enter three numbers, the second should be nonzero, and the third, must be greater than zero, and less than 50 \n");
              exit(1);
          }
      }
 
-     //Check for zero
-     //As well as sleep bounds
-     if(atoi(argv[2]) == 0 ||
-        atoi(argv[3]) < 1 ||
+     //Checksleep bounds
+     if(atoi(argv[3]) < 1 ||
         atoi(argv[3]) > 50) {
 
          //Error
-         printf("\n USAGE: Please enter three numbers, the second must be nonzero, and the third, must be greater than zero, and less than 50 \n");
+         printf("\n USAGE: Please enter three numbers, the second should be nonzero, and the third, must be greater than zero, and less than 50 \n");
          exit(1);
      }
 

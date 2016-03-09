@@ -7,8 +7,9 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/types.h>
+# include <sys/wait.h>
 # include <unistd.h>
-#include <time.h>   /* Needed for struct timespec */
+# include <time.h>   /* Needed for struct timespec */
 int main(int argc, char *argv[])
 {
      //Initialize some variables
@@ -23,7 +24,7 @@ int main(int argc, char *argv[])
      atoi(argv[1]) > 4 ||
      atoi(argv[1]) < 0) {
 
-         printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
+         printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B, should be nonzero] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
          exit(1);
      }
 
@@ -35,19 +36,17 @@ int main(int argc, char *argv[])
          if(sscanf(argv[count], "%d", &value) != 1) {
 
              //Error
-             printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
+             printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B, should be nonzero] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
              exit(1);
          }
      }
 
-     //Check for zero
-     //As well as sleep bounds
-     if(atoi(argv[3]) == 0 ||
-        atoi(argv[4]) < 1 ||
+     //check sleep bounds
+     if(atoi(argv[4]) < 1 ||
         atoi(argv[4]) > 50) {
 
          //Error
-         printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
+         printf("\n Usage: %s [Integer: 0 <= Child/Operation # <= 3] [Integer: Argument A] [Integer: Argument B, should be nonzero] [Integer: 0 <= Sleep Time => 50] \n", argv[0]);
          exit(1);
      }
 
@@ -98,12 +97,23 @@ int main(int argc, char *argv[])
      else if(operation == 3) {
 
          //Division
-        //Save the result
-        result = argA / argB;
-        int remainder = argA % argB;
+         //Check for non zero
+        if(argB != 0) {
 
-        //Print the answer
-        printf("I am child number %d with PID %ld, the quotient is %d, with a remainder of %d", operation, (long) getpid(), result, remainder);
+            //Get the result
+            result = argA / argB;
+            //Get the remainder
+            int remainder = argA % argB;
+
+            //Print the answer
+            printf("I am child number %d with PID %ld, the quotient is %d, with a remainder of %d", operation, (long) getpid(), result, remainder);
+        }
+        else {
+
+            //Print we coult not divide
+            printf("I am child number %d with PID %ld, I could not divide by zero", operation, (long) getpid());
+        }
+
      }
      else {
          printf("Incorrect operation number! Please refer to usage. Have a nice day!");
