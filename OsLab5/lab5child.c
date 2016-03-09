@@ -89,7 +89,7 @@ void checkInput(int argc, char *argv[]) {
 void printUsage(char *programName) {
 
     //Print the usage
-    printf("\n Usage: %s [Integer: 0 < Sleep Time < 50] \n", programName);
+    printf("\n Usage: %s [Integer: 0 < Sleep Time < 50] \n\n", programName);
     //Exit
     exit(1);
 }

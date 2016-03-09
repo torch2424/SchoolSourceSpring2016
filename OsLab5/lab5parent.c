@@ -24,18 +24,18 @@ int main(int argc, char *argv[])
     checkInput(argc, argv);
 
     //Intialize variables
-    pid_t pid, w; int k, status; char value[3];
+    pid_t pid, w; int k, status;
 
-    //Loop through our values
-    for (k = 0;k < 3; ++k) {
+    //Loop until we forked the number of children
+    for (k = 0;k < atoi(argv[1]); ++k) {
 
         //Fork a child
         if ((pid = fork()) == 0) {
 
             //Print the value,
             //and execute the child program
-            sprintf(value, "%d", k);
-            execl("child", "child", value, (char *) 0);
+            //passing the sleep time
+            execl("./child", "child", atoi(argv[2]), (char *) 0);
         }
 
         //Parent, print the forked child
@@ -78,16 +78,16 @@ void checkInput(int argc, char *argv[]) {
     }
 
     //check child bounds
-    if(atoi(argv[2]) < 1 ||
-       atoi(argv[2]) > 20) {
+    if(atoi(argv[1]) < 1 ||
+       atoi(argv[1]) > 20) {
 
        //Print Usage and exit
        printUsage(argv[0]);
     }
 
     //check sleep bounds
-    if(atoi(argv[3]) < 1 ||
-       atoi(argv[3]) > 50) {
+    if(atoi(argv[2]) < 1 ||
+       atoi(argv[2]) > 50) {
 
         //Print Usage and exit
         printUsage(argv[0]);
@@ -98,7 +98,7 @@ void checkInput(int argc, char *argv[]) {
 void printUsage(char *programName) {
 
     //Print the usage
-    printf("\n Usage: %s [Integer: 0 < # of Child Processes # < 20] [Integer: 0 < Sleep Time < 50] \n", programName);
+    printf("\n Usage: %s [Integer: 0 < # of Child Processes # < 20] [Integer: 0 < Sleep Time < 50] \n\n", programName);
     //Exit
     exit(1);
 }
