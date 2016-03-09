@@ -35,11 +35,7 @@ int main(int argc, char *argv[])
             //Print the value,
             //and execute the child program
             //passing the sleep time
-            char *childCall[2];
-            childCall[0] = "./child";
-            childCall[1] = argv[2];
-
-            execvp(childCall[0], &childCall[0]);
+            execl("./child", "./child", argv[2], (char *) 0);
         }
 
         //Parent, print the forked child
