@@ -2,7 +2,6 @@
 /* PROGRAM: lab5parent.c */
 /* DESCRIPTION: The parent generates a child process */
 /* passes it arguements, and then waits for it to exit.*/
-/* parameters */
 /**************************************************************************/
 
 //Includes

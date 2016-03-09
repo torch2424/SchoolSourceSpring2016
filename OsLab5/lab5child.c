@@ -1,8 +1,7 @@
 /**************************************************************************/
-/* PROGRAM: lab5parent.c */
-/* DESCRIPTION: The parent generates a child process */
-/* passes it arguements, and then waits for it to exit.*/
-/* parameters */
+/* PROGRAM: lab5child.c */
+/* DESCRIPTION: The child sleeps for a random time */
+/* and prints to the console once it terminates*/
 /**************************************************************************/
 
 //Includes
@@ -25,34 +24,33 @@ int main(int argc, char *argv[])
     checkInput(argc, argv);
 
     //Intialize variables
-    pid_t pid, w; int k, status; char value[3];
+    pid_t pid; int ret_value;
 
-    //Loop through our values
-    for (k = 0;k < 3; ++k) {
+    //Get out pid
+    pid = getpid();
 
-        //Fork a child
-        if ((pid = fork()) == 0) {
+    //Get our return value
+    ret_value = (int) (pid % 256);
 
-            //Print the value,
-            //and execute the child program
-            sprintf(value, "%d", k);
-            execl("child", "child", value, (char *) 0);
-        }
+    //Set up our seed
+    srand(pid);
 
-        //Parent, print the forked child
-        else printf ("Forked child %d\n", pid);
+    //Sleep a random time
+    int randSleep = (rand() % atoi(argv[1])) + 1;
+    sleep(randSleep);
+
+    //Print we are terminating
+    //And kill or exit the process accordingly
+    if (atoi(*(argv + 1)) % 2) {
+
+        printf("Child %d is terminating with signal 009\n", pid);
+        kill(pid, 9);
     }
+    else {
 
-    /* Wait for children */
-    //Loop while waiting
-    while ((w = wait(&status)) && w != - 1) {
-
-        //When the child dies, print the wait status
-        if (w != - 1) printf ("Wait on PID: %d returns status of: %04X\n", w, status);
+        printf("Child %d is terminating with exit(%04X)\n", pid, ret_value);
+        exit(ret_value);
     }
-
-    //Exit the program
-    exit(0);
 }
 
 //Function to check our input
