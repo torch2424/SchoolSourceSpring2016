@@ -12,18 +12,6 @@ public class DfsPuzzle {
     private static final String beginState = "283164705";
     private static final String endState = "123804765";
 
-    //our state hashmaps
-    private static HashMap<Integer, String> stateMap = new HashMap<Integer, String>();
-    private static HashMap<Integer, String> endMap = new HashMap<Integer, String>();
-
-    //Our ArrayList tree
-    //First Dimension represents Tree Node
-    //Second Dimension represents it's children's contents
-    private static ArrayList<ArrayList<HashMap<Integer, String>>> dfsTree = new ArrayList<ArrayList<HashMap<Integer, String>>>();
-
-
-
-
       //Main Function
       public static void main(String[] args) {
 
@@ -34,63 +22,151 @@ public class DfsPuzzle {
           System.out.println("Welcome to the " + appName + "!");
           System.out.println();
 
+          //Create our state hashmaps
+          HashMap<Integer, String> stateMap = new HashMap<Integer, String>();
+          HashMap<Integer, String> endMap = new HashMap<Integer, String>();
+
           //Place our states into the maps
           for(int i = 0; i < 9; ++i) {
 
-              stateMap.put(i, Character.toString(beginState.charAt(i)));
-              endMap.put(i, Character.toString(endState.charAt(i)));
+              stateMap.put(i + 1, Character.toString(beginState.charAt(i)));
+              endMap.put(i + 1, Character.toString(endState.charAt(i)));
           }
 
-          //Pass our maps to our DFS tree
+          //Print our two states
+          System.out.println("Beginning State: ");
+          printMap(stateMap);
+
+          System.out.println("Goal State: ");
+          printMap(endMap);
 
 
-          //Since input is good, start searching
-          System.out.println("Looking for sum...");
+          //Inform User of starting search
+          System.out.println("Searching to solve the puzzle...");
+          System.out.println();
+          System.out.println();
           System.out.println();
 
-          //Since we have the right number of arguments,
-          //run the program
-          //Save our sum
-          int inputSum = Integer.valueOf(args[args.length - 1]);
+          //Recursively Solve the puzzle!
+          solvePuzzle(stateMap, endMap);
 
-          //Place all of our arguments in a list
-          //for checking
-          ArrayList<Integer> argList = new ArrayList<Integer>();
+          //Create our tree with our initial state
+          //DfsTree puzzleTree = new DfsTree(stateMap);
 
-          //Loop, until -1 since the sum
-          for(int i = 0; i < args.length - 1; ++i) {
 
-              //Simply add all to the hash set
-              argList.add(Integer.valueOf(args[i]));
-          }
+      }
 
-          //Nested Loop through and check the elements
-          //By adding it to every element in front of the pivot
-          // -1 since we do not want to reach the last the
-          // Last index with i since there will be nothing to check
-          for(int i = 0; i < argList.size() - 1; ++i) {
-              for(int j = i + 1; j < argList.size(); ++j) {
+      //Function to print a map to a readable form
+      public static void printMap(HashMap<Integer, String> map) {
 
-                  if(argList.get(i) + argList.get(j) == inputSum) {
+          //Add some spacing
+          System.out.println();
 
-                      //Since we only want to know if the sum exists,
-                      //end here
-                      System.out.println("Sum found! Sum is " +
-                      Integer.toString(inputSum) + " with the arguments " +
-                      Integer.toString(argList.get(i)) + ", and " +
-                      Integer.toString(argList.get(j)) + ".");
+          //Create our map iterator
+            Iterator iterate = map.entrySet().iterator();
 
-                      //And exit
-                      exitApp();
-                  }
+            //Loop through the map
+            while (iterate.hasNext()) {
+
+                //Get our entry
+                Map.Entry<Integer, String> pair = (Map.Entry <Integer, String>)iterate.next();
+
+                //Print the value, if not zero
+                if(Integer.valueOf((String) pair.getValue()) > 0) System.out.print(pair.getValue());
+                else System.out.print(" ");
+
+                //Print spacing depending on key value
+                if(((Integer)pair.getKey()) % 3 != 0) System.out.print(" - ");
+                else System.out.println();
+
+                //Removed the value from the iterator
+                iterate.remove(); // avoids a ConcurrentModificationException
+            }
+
+            //Add some spacing
+            System.out.println();
+      }
+
+      //Function to solve the puzzle
+      public static HashMap<Integer, String> solvePuzzle (HashMap<Integer, String> currentMap, HashMap<Integer, String> goalMap) {
+
+          //Print the State
+          System.out.println("Current State: ");
+          printMap(currentMap);
+
+          //Check if the goal state is the current State
+          if(currentMap.equals(goalMap)) return currentMap;
+
+          //Try to move the map
+          if(moveMap(currentMap).size() > 0) {
+
+              for(int i = 0; i < moveMap(currentMap).size(); i ++) {
+
+                  //move the map of all of it's children
+                  solvePuzzle(moveMap(currentMap).get(i));
               }
           }
 
-          //Since no sum was found, simply print and exit
-          System.out.println("Target sum not found: " + Integer.toString(inputSum) + ".");
+          //Return null since we could not solve the puzzle
+          return null;
 
-          //Print some spacing
-          System.out.println();
+      }
+
+      //Function to move the tree up a state
+      public static ArrayList<HashMap<Integer, String>> moveMap(HashMap<Integer, String> mapState) {
+
+          //Create our array of states
+          ArrayList<HashMap<Integer, String>> mapList = new ArrayList<HashMap<Integer, String>>();
+
+          //Iterate through the map
+            Iterator iterate = mapState.entrySet().iterator();
+
+            //Loop through the map
+            while (iterate.hasNext()) {
+
+                //Get our entry
+                Map.Entry<Integer, String> pair = (Map.Entry)iterate.next();
+
+                //Print the value, if not zero
+                if(Integer.valueOf((String) pair.getValue()) == 0) {
+
+                    //Get the key
+                    int mapKey = Integer.valueOf((Integer) pair.getKey());
+
+                    //Add all possible swaps
+                    //Up
+                    if(mapKey > 3) mapList.add(swapKeys(mapState, pair.getKey(), pair.getKey() - 3));
+                    //Left
+                    if(mapKey != 1 &&
+                    mapKey != 4 &&
+                    mapKey != 7) mapList.add(swapKeys(mapState, pair.getKey(), pair.getKey() - 1));
+                    //Down
+                    if(mapKey < 7) mapList.add(swapKeys(mapState, pair.getKey(), pair.getKey() + 3));
+                    //Right
+                    if(mapKey != 3 &&
+                    mapKey != 6 &&
+                    mapKey != 9) mapList.add(swapKeys(mapState, pair.getKey(), pair.getKey() - 1));
+                }
+
+                //Removed the value from the iterator
+                iterate.remove(); // avoids a ConcurrentModificationException
+            }
+
+            //Return the array of states
+            return mapList;
+      }
+
+      //Function to swap two keys in a map
+      public static HashMap<Integer, String> swapKeys(HashMap<Integer, String> swapMap, Integer firstKey, Integer secondKey) {
+
+          //Create our temp key
+          int tempValue = 0;
+
+          tempValue = swapMap.get(firstKey);
+          swapMap.put(firstKey, swapMap.get(secondKey));
+          swapMap.put(secondKey, Integer.toString(tempValue));
+
+          return swapMap;
       }
 
       //Function to exit the app
