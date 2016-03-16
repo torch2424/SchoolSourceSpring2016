@@ -5,7 +5,17 @@ import java.util.*;
 public class DfsPuzzle {
 
     //Our application name
-    private static final String appName = "Sum Checker Application";
+    private static final String appName = "DFS Puzzle Solver";
+
+    //Our beginning and ending states
+    //Zero is the empty spot
+    private static final String beginState = "283164705";
+    private static final String endState = "123804765";
+
+    //our state hashmaps
+    private static HashMap<Integer, String> stateMap = new HashMap<Integer, String>();
+    private static HashMap<Integer, String> endMap = new HashMap<Integer, String>();
+
 
 
       //Main Function
@@ -18,8 +28,15 @@ public class DfsPuzzle {
           System.out.println("Welcome to the " + appName + "!");
           System.out.println();
 
-          //Check the input
-          checkArgs(args);
+          //Place our states into the maps
+          for(int i = 0; i < 9; ++i) {
+
+              stateMap.put(i, Character.toString(beginState.charAt(i)));
+              endMap.put(i, Character.toString(endState.charAt(i)));
+          }
+
+          //Pass our maps to our DFS tree
+
 
           //Since input is good, start searching
           System.out.println("Looking for sum...");
@@ -70,41 +87,6 @@ public class DfsPuzzle {
           System.out.println();
       }
 
-
-
-      //Function to check input values
-      public static void checkArgs(String[] args) {
-
-          //Check if we have enough arguments
-          //We need at least three arguments
-          //Two integers that can add, and equal the sum
-          if(args.length < 3) {
-
-              //Print the Usage
-              System.out.println("USAGE: Insert multiple integer arguments that will compose an array. the last argument will be the sum we are searching for. Need at least 3 arguments: x, y, and the sum.");
-
-              //And exit
-              exitApp();
-          }
-
-          //Now check if all arguments are integers
-          //If not, exit
-          for(int i = 0; i < args.length; ++i) {
-
-              try {
-                  Integer.valueOf(args[i]);
-              }
-              catch(NumberFormatException e) {
-
-                  //Print the Usage
-                  System.out.println("USAGE: Insert multiple integer arguments that will compose an array. the last argument will be the sum we are searching for. Need at least 3 arguments: x, y, and the sum.");
-
-                  //And exit
-                  exitApp();
-              }
-          }
-      }
-
       //Function to exit the app
       public static void exitApp() {
 
@@ -112,5 +94,51 @@ public class DfsPuzzle {
           System.out.println();
           System.exit(0);
       }
+
+
+          //Our generic tree class
+          public class DfsTree<T> {
+
+              //Create our root node
+            private Node<T> rootNode;
+
+
+            //Our constructor
+            public DfsTree(T treeRoot) {
+                rootNode = new Node<T>();
+                rootNode.state = treeRoot;
+                rootNode.children = new ArrayList<Node<T>>();
+            }
+
+            //Add a node to the tree
+            public boolean addNode(HashMap parent, HashMap child) {
+
+            }
+
+            //Find a node in the tree
+            public Node findNode(HashMap<Integer, String> state, Node node) {
+
+                //Recursively look for the state
+                if(node.state.equals(state)) return node;
+                else if(node.children.size() > 0) {
+
+                    //Loop through the children and add return the search
+                    for(int i = 0; i < node.children.size(); ++i) {
+                        return findNode(state, node.children.get(i));
+                    }
+                }
+                else {
+                    return null;
+                }
+            }
+
+            public class Node<T> {
+
+                //Initialize our node state, parent node, and children
+                private T state;
+                private Node<T> parent;
+                private List<Node<T>> children;
+            }
+        }
 
 }
