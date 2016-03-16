@@ -16,6 +16,12 @@ public class DfsPuzzle {
     private static HashMap<Integer, String> stateMap = new HashMap<Integer, String>();
     private static HashMap<Integer, String> endMap = new HashMap<Integer, String>();
 
+    //Our ArrayList tree
+    //First Dimension represents Tree Node
+    //Second Dimension represents it's children's contents
+    private static ArrayList<ArrayList<HashMap<Integer, String>>> dfsTree = new ArrayList<ArrayList<HashMap<Integer, String>>>();
+
+
 
 
       //Main Function
@@ -94,51 +100,5 @@ public class DfsPuzzle {
           System.out.println();
           System.exit(0);
       }
-
-
-          //Our generic tree class
-          public class DfsTree<T> {
-
-              //Create our root node
-            private Node<T> rootNode;
-
-
-            //Our constructor
-            public DfsTree(T treeRoot) {
-                rootNode = new Node<T>();
-                rootNode.state = treeRoot;
-                rootNode.children = new ArrayList<Node<T>>();
-            }
-
-            //Add a node to the tree
-            public boolean addNode(HashMap parent, HashMap child) {
-
-            }
-
-            //Find a node in the tree
-            public Node findNode(HashMap<Integer, String> state, Node node) {
-
-                //Recursively look for the state
-                if(node.state.equals(state)) return node;
-                else if(node.children.size() > 0) {
-
-                    //Loop through the children and add return the search
-                    for(int i = 0; i < node.children.size(); ++i) {
-                        return findNode(state, node.children.get(i));
-                    }
-                }
-                else {
-                    return null;
-                }
-            }
-
-            public class Node<T> {
-
-                //Initialize our node state, parent node, and children
-                private T state;
-                private Node<T> parent;
-                private List<Node<T>> children;
-            }
-        }
 
 }
