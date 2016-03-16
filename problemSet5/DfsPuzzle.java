@@ -7,8 +7,14 @@ public class DfsPuzzle {
     //Our application name
     private static final String appName = "DFS Puzzle Solver";
 
+    //Our borders
+    public static final String fancyBorder = "******************************************";
+    public static final String plainBorder = "------------------------------------------";
+
+
     //Our beginning and ending states
     //Zero is the empty spot
+    //Going from left to right, top to bottom
     private static final String beginState = "283164705";
     private static final String endState = "123804765";
 
@@ -27,34 +33,61 @@ public class DfsPuzzle {
 
           //Print our two states
           System.out.println("Beginning State: ");
-          puzzle.printTree(puzzle.stateTree);
+          SlidePuzzle.printState(puzzle.initialState);
 
           System.out.println("Goal State: ");
-          puzzle.printTree(puzzle.endTree);
+          SlidePuzzle.printState(puzzle.endState);
 
 
           //Inform User of starting search
+          System.out.println();
+          System.out.println();
+          System.out.println(fancyBorder);
+          System.out.println();
           System.out.println("Searching to solve the puzzle...");
           System.out.println();
+          System.out.println(fancyBorder);
           System.out.println();
           System.out.println();
 
           //Recursively Solve the puzzle!
-          ArrayList<Integer> finalTree = puzzle.solvePuzzle(puzzle.stateTree, puzzle.endTree);
+          ArrayList<Integer> finalTree = puzzle.solvePuzzle();
 
-          if(finalTree == null) System.out.println("COULD NOT SOLVE PUZZLE");
+          //Print some fancy answer
+          System.out.println();
+          System.out.println();
+          System.out.println(fancyBorder);
+          System.out.println();
+          if(finalTree == null) {
+
+              //We couldnt solve the puzzle
+            System.out.println("Sorry, but I could not solve the puzzle...");
+            System.out.println();
+          }
           else {
 
-              System.out.println("COULD SOLVE PUZZLE");
+              //Solved the puzzle!
+              System.out.println("Found the solution:");
+              System.out.println();
+              SlidePuzzle.printState(finalTree);
+
 
           }
+          //Print some fancy answer
+          System.out.println(fancyBorder);
+          System.out.println();
+          System.out.println();
 
+          //Exit the app
+          exitApp();
       }
 
       //Function to exit the app
       public static void exitApp() {
 
-          //Simply print spacing and exit
+          //Simply print  goodbye,spacing, and exit
+          System.out.println("Thank you for using the " + appName + "!");
+          System.out.println("Have a nice day!");
           System.out.println();
           System.exit(0);
       }
