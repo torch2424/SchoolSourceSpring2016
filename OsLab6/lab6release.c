@@ -50,7 +50,33 @@ void checkInput(int argc, char *argv[]) {
 
     //Check the number of arguments
     //Print the usage if argument amount is invalid
-    if (argc != 1) {
+    if (argc != 4) {
+
+        //Print Usage and exit
+        printUsage(argv[0]);
+    }
+
+    //Check for characters on integers
+    int count;
+    for(count = 2; count < 4; count++) {
+
+        int value;
+        if(sscanf(argv[count], "%d", &value) != 1) {
+
+            //Print Usage and exit
+            printUsage(argv[0]);
+        }
+    }
+
+    //check sleep bounds
+    if(atoi(argv[2]) < 1) {
+
+       //Print Usage and exit
+       printUsage(argv[0]);
+    }
+
+    //check retry bounds
+    if(atoi(argv[3]) < 1) {
 
         //Print Usage and exit
         printUsage(argv[0]);
@@ -61,7 +87,7 @@ void checkInput(int argc, char *argv[]) {
 void printUsage(char *programName) {
 
     //Print the usage
-    printf("\n Usage: %s\nSimply run the program, and pass no paramters to affect the lock\n\n", programName);
+    printf("\n Usage: %s [String: Name of the file] [Integer: 0 < Sleep Time] [Integer: 0 < # of times to retry accessing the file] \n\n", programName);
     //Exit
     exit(1);
 }
