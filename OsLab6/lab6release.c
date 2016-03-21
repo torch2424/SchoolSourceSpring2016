@@ -1,7 +1,7 @@
 /**************************************************************************/
 /* PROGRAM: lab6release.c */
-/* DESCRIPTION: The child sleeps for a random time */
-/* and prints to the console once it terminates*/
+/* DESCRIPTION: This deletes a file of the specified name, */
+/* and if it is unable to, it will sleep and retry a specified amount */
 /**************************************************************************/
 
 //Includes

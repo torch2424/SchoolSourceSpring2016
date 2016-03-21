@@ -1,7 +1,7 @@
 /**************************************************************************/
 /* PROGRAM: lab6acquire.c */
-/* DESCRIPTION: The parent generates a child process */
-/* passes it arguements, and then waits for it to exit.*/
+/* DESCRIPTION: This creates a file of the specified name, */
+/* and if it is unable to, it will sleep and retry a specified amount */
 /**************************************************************************/
 
 //Includes
