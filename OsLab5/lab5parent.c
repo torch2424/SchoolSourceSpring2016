@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
     checkInput(argc, argv);
 
     //Intialize variables
-    pid_t pid, w; int k, status;
+    pid_t pid, w;
+    int k, status;
 
     //Loop until we forked the number of children
     for (k = 0;k < atoi(argv[1]); ++k) {
