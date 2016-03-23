@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 //Declare our helper functions
 void printUsage(char *programName);
@@ -58,7 +59,8 @@ int main(int argc, char *argv[])
             //Couldnt get the lock after so many tries
             //print, and exit with signal of child number
             printf ("\n Unable to obtain lock file\n");
-            exit(childNumber);
+            //Kill itself with childnumber being it's signal
+            kill(pid, childNumber);
         }
     }
     //finally, close the lock
@@ -72,23 +74,40 @@ int main(int argc, char *argv[])
 
         //Cat the file
         execlp("/bin/cat", "cat", fname, (char*)NULL);
+        printf("\nExec failure. Could not exec /bin/cat in child #%d\n", childNumber);
+        exit(1);
     }
     //Fork Failure
     else if(catStatus == -1) printf("\nUnable to fork cat, unable to read the file.\n");
+
+
+    //Wait for the cat to read
+
+    //Create our waitstatus
+    pid_t waitStatus;
+    int status;
+    //Loop while waiting
+    while((waitStatus = wait(&status)) && waitStatus != - 1)
 
 
     //Remove the lock file
     while (unlink(lockFileName)!=0) {
 
         if (++count < n_try) sleep(sleeptime);
-        else { printf ("\n Cannot release lock\n"); exit(childNumber);
+        else {
+
+            //Couldnt remove lock
+            printf ("\n Cannot release lock\n");
+            //Kill itself with childnumber being it's signal
+            kill(pid, childNumber);
         }
     }
 
 
     //Exit the program
     //Exit with least significant 8 bits(1 byte) of PID
-    exit(getpid() & 0xff);
+    int exitValue = (int) (pid % 256);
+    exit(exitValue);
 }
 
 

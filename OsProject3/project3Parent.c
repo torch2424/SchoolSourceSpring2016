@@ -78,6 +78,9 @@ int main(int argc, char *argv[])
             //and execute the child program
             //passing the sleep time
             execvp(childFork[0], &childFork[0]);
+
+            printf("\nExec failure. Could not exec %s for child #%d\n", childFork[0], k);
+            exit(1);
         }
         //Fork Failure
         else if(forkStatus == -1) printf("Unable to fork child #%d\n", k);
@@ -93,7 +96,7 @@ int main(int argc, char *argv[])
     while((waitStatus = wait(&status)) && waitStatus != - 1) {
 
         //When the child dies, print the wait status
-        if (waitStatus != - 1) printf ("Wait on PID: %d returns status of: %04X\n", waitStatus, status);
+        if (waitStatus != - 1) printf ("Wait on PID: %d returns status of: %04X\n", waitStatus, (int) (status >> 8));
     }
 
     //Finally, Exit the program
