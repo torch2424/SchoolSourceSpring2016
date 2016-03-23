@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
     //Initialize our variables
     char *fname;
+    char *lockFileName = "lock";
     int sleeptime, n_try, count=0;
     pid_t pid;
 
@@ -45,9 +46,14 @@ int main(int argc, char *argv[])
     sleeptime = atoi(argv[3]);
 
     //Try to remove all previous versions of the file
-    while (unlink(fname)!=0) if (++count < n_try) sleep(sleeptime);
-    else {
-        printf ("\n Cannot release previous invocations of %s\n", fname); exit(-1);
+    //Check if it exists first
+    if( access( lockFileName, F_OK ) != -1 ) {
+
+        //File exists, try to remove it
+        while (unlink(lockFileName)!=0) if (++count < n_try) sleep(sleeptime);
+        else {
+            printf ("\n Cannot release previous invocations of %s\n", lockFileName); exit(-1);
+        }
     }
 
     //Create our children
@@ -59,11 +65,11 @@ int main(int argc, char *argv[])
 
         //Create our command to exec()
         char *childFork[5];
-        childFork[0] = "./project3Child";
-        sprintf(childFork[1], "%d", k);
-        childFork[2] = fname;
-        childFork[3] = argv[2];
-        childFork[4] = argv[3];
+        childFork[0] = "./child";
+        childFork[1] = fname;
+        childFork[2] = argv[2];
+        childFork[3] = argv[3];
+        sprintf(childFork[4], "%d", k);
 
         //Fork a child
         if ((forkStatus = fork()) == 0) {
@@ -90,7 +96,7 @@ int main(int argc, char *argv[])
         if (waitStatus != - 1) printf ("Wait on PID: %d returns status of: %04X\n", waitStatus, status);
     }
 
-    //Exit the program
+    //Finally, Exit the program
     exit(0);
 }
 
