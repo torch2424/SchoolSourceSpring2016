@@ -1,13 +1,11 @@
 /**************************************************************************/
 /* PROGRAM:  semcontrol.c */
 /*
-    DESCRIPTION: This program will create a lock
-    read the user inputted file using cat, and then
-    release the lock file, and exit with the
-    least significant byte of its process id
+    DESCRIPTION: This program will create an
+    array of semphores, and then display their
+    numbers
 
     For operating systems, Lab #7
-
  */
 /**************************************************************************/
 
