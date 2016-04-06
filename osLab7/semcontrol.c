@@ -17,6 +17,7 @@
 # include <sys/sem.h>
 # include <unistd.h>
 # include <stdlib.h>
+# include <time.h>
 # define NS 3
 
 union semun {
