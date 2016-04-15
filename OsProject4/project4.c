@@ -1,11 +1,12 @@
 /**************************************************************************/
-/* PROGRAM:  semcontrol.c */
+/* PROGRAM:  project4.c */
 /*
     DESCRIPTION: This program will create an
-    array of semphores, and then display their
-    numbers
+    inputted number of semaphores, and then
+    assign them the inputted values. They will then
+    be removed or kept depending on the user input
 
-    For operating systems, Lab #7
+    For operating systems, Project #4
  */
 /**************************************************************************/
 
@@ -27,12 +28,17 @@ union semun {
     int val; struct semid_ds *buf; ushort *array;
 };
 
-int main(void)
+int main(int argc, char *argv[])
 {
 
+    int NS = atoi(argv[2]);
+
     //Initialize our variables
-    int sem_id, sem_value, i; key_t ipc_key; struct semid_ds sem_buf;
-    static ushort sem_array[NS] = {3, 1, 4}; union semun arg;
+    int sem_id, sem_value, i;
+    key_t ipc_key;
+    struct semid_ds sem_buf;
+    ushort sem_array[NS];
+    union semun arg;
 
     //get our key to generate our semphore id's
     ipc_key = ftok(".", 'S');
