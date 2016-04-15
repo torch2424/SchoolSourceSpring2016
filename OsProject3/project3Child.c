@@ -1,10 +1,10 @@
 /**************************************************************************/
 /* PROGRAM:  project3Child.c */
 /*
-    DESCRIPTION: This program will call 3 children
-    processes to try to acquire the lock of a file,
-    it will delete previous invocations of the file,
-    as well as display the wait status
+    DESCRIPTION: This program will create a lock
+    read the user inputted file using cat, and then
+    release the lock file, and exit with the
+    least significant byte of its process id
 
  */
 /**************************************************************************/
