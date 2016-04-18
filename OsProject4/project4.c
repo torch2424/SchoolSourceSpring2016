@@ -30,30 +30,49 @@ union semun {
 
 int main(int argc, char *argv[])
 {
+    //Verify our input
+    checkInput(argc, argv);
 
+    //Grab our input
+    //Get our ropt (remove the semaphores or not)
+    bool removeOption = false;
+    if(strcmp(argv[1], "r") == 0) {
+        removeOption = true;
+    }
+    //Since it wasnt remove, it must be false
+
+    //Get our number of semaphores to e created
     int NS = atoi(argv[2]);
 
+    //Get our values for our semaphores in loop
+    int semValues[NS];
+    int i;
+    //i = 3, since it is where values begin in args array
+    for(i = 3; i < argc; i++) {
+        semValues[i - 3] = atoi(argv[i]);
+    }
+
+
+
     //Initialize our variables
-    int sem_id, sem_value, i;
+    int sem_id, sem_value;
     key_t ipc_key;
     struct semid_ds sem_buf;
-    ushort sem_array[NS];
     union semun arg;
 
     //get our key to generate our semphore id's
     ipc_key = ftok(".", 'S');
 
     /* Create semaphore */
-    //IPC_CREAT in part A and B, IPC_CREAT | IPC_EXCL in part c
-    if ((sem_id = semget(ipc_key, NS, IPC_CREAT | IPC_EXCL | 0666)) == -1) {
+    //Using IPC_CREAT since we are creating multiple semaphore
+    if ((sem_id = semget(ipc_key, NS, IPC_CREAT | 0666)) == -1) {
 
-        perror ("semget: IPC | 0666");
+        perror ("Error: Could not create semaphore using IPC_CREAT");
         exit(1);
     }
 
     //Show the semphore Identifier
     printf ("Semaphore identifier %d\n", sem_id);
-
 
     /* Set arg (the union) to the address of the storage location for */
     /* returned semid_ds value */
@@ -67,31 +86,46 @@ int main(int argc, char *argv[])
 
     printf ("Create %s", ctime(&sem_buf.sem_ctime));
 
-    /* Set arg (the union) to the address of the initializing vector */
-    // Set all of the semaphore's values to arg
-    arg.array = sem_array;
-    if (semctl(sem_id, 0, SETALL, arg) == -1) {
-        perror("semctl: SETALL");
-        exit(3);
+    //Print the time
+    // time_t tTime = time(NULL);
+    // struct tm *tm = localtime(&tTime);
+    // char timeString[64];
+    // strftime(timeString, sizeof(timeString), "%c", tm);
+    // printf("Created %s\n", timeString);
+
+    //Loop through our semaphores and set their values
+    for (i=0; i < NS; ++i) {
+
+        /* Set arg (the union) to the address of the initializing vector */
+        // Set all of the semaphore's values to arg
+        arg.val = semValues[i];
+
+        if (semctl(sem_id, i, SETVAL, arg) == -1) {
+
+            perror("ERROR: Could not set the value for semaphore");
+            exit(3);
+        }
     }
 
     //Loop through our semaphores and print their values
-    for (i=0; i<NS; ++i) {
+    for (i=0; i < NS; ++i) {
+
         if ((sem_value = semctl(sem_id, i, GETVAL, 0)) == -1) {
 
-            perror("semctl : GETVAL");
+            perror("ERROR: Could not retreive the semaphore value");
             exit(4);
         }
-
         printf ("Semaphore %d has value of %d\n",i, sem_value);
     }
 
-    /* remove semaphore */
-    //Removed in part B and C of the lab
-    // if (semctl(sem_id, 0, IPC_RMID, 0) == -1) {
-    //     perror ("semctl: IPC_RMID");
-    //     exit(5);
-    // }
+    //Remove the semaphore if we have the rOpt
+    if(removeOption) {
+        if (semctl(sem_id, 0, IPC_RMID, 0) == -1) {
+
+            perror ("ERROR: Could not remove semaphore");
+            exit(5);
+        }
+    }
 }
 
 //Function to check our input
