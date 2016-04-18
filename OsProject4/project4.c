@@ -18,6 +18,7 @@
 # include <stdlib.h>
 # include <time.h>
 # include <string.h>
+# include <stdbool.h>
 
 //Declare our helper functions
 void printUsage(char *programName);
@@ -65,9 +66,9 @@ int main(int argc, char *argv[])
 
     /* Create semaphore */
     //Using IPC_CREAT since we are creating multiple semaphore
-    if ((sem_id = semget(ipc_key, NS, IPC_CREAT | 0666)) == -1) {
+    if ((sem_id = semget(ipc_key, NS, IPC_CREAT | IPC_EXCL | 0666)) == -1) {
 
-        perror ("Error: Could not create semaphore using IPC_CREAT");
+        perror ("Error: Could not create semaphore");
         exit(1);
     }
 
@@ -84,14 +85,8 @@ int main(int argc, char *argv[])
         exit(2);
     }
 
+    //Display the time
     printf ("Create %s", ctime(&sem_buf.sem_ctime));
-
-    //Print the time
-    // time_t tTime = time(NULL);
-    // struct tm *tm = localtime(&tTime);
-    // char timeString[64];
-    // strftime(timeString, sizeof(timeString), "%c", tm);
-    // printf("Created %s\n", timeString);
 
     //Loop through our semaphores and set their values
     for (i=0; i < NS; ++i) {
@@ -135,7 +130,7 @@ void checkInput(int argc, char *argv[]) {
     //Print the usage if argument amount is invalid
     //We need at least 4 arguments, since it is
     //Program name, option, number(>=1), sem value
-    if (argc != 4) {
+    if (argc < 4) {
 
         //Print Usage and exit
         printUsage(argv[0]);
@@ -162,14 +157,14 @@ void checkInput(int argc, char *argv[]) {
     }
 
     //check number of semaphores
-    if(atoi(argv[3]) < 1) {
+    if(atoi(argv[2]) < 1) {
 
        //Print Usage and exit
        printUsage(argv[0]);
     }
 
     //check if number of semphores = number of semphores values
-    if(atoi(argv[3]) != argc - 3) {
+    if(atoi(argv[2]) != argc - 3) {
 
        //Print Usage and exit
        printUsage(argv[0]);
