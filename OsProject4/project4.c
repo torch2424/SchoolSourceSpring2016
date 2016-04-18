@@ -10,6 +10,7 @@
  */
 /**************************************************************************/
 
+//Includes
 # include <stdio.h>
 # include <sys/types.h>
 # include <sys/ipc.h>
@@ -53,9 +54,7 @@ int main(int argc, char *argv[])
         semValues[i - 3] = atoi(argv[i]);
     }
 
-
-
-    //Initialize our variables
+    //Initialize our semaphore specific variables
     int sem_id, sem_value;
     key_t ipc_key;
     struct semid_ds sem_buf;
@@ -81,7 +80,7 @@ int main(int argc, char *argv[])
     arg.buf = &sem_buf;
     if (semctl(sem_id, 0, IPC_STAT, arg) == -1) {
 
-        perror ("semctl: IPC_STAT");
+        perror ("Error: Could not store the address in union buf using IPC_STAT");
         exit(2);
     }
 
@@ -89,7 +88,7 @@ int main(int argc, char *argv[])
     printf ("Create %s", ctime(&sem_buf.sem_ctime));
 
     //Loop through our semaphores and set their values
-    for (i=0; i < NS; ++i) {
+    for (i = 0; i < NS; ++i) {
 
         /* Set arg (the union) to the address of the initializing vector */
         // Set all of the semaphore's values to arg
@@ -97,17 +96,21 @@ int main(int argc, char *argv[])
 
         if (semctl(sem_id, i, SETVAL, arg) == -1) {
 
-            perror("ERROR: Could not set the value for semaphore");
+            char errorString[100];
+            sprintf(errorString, "ERROR: Could not set the value for semaphore %d", i);
+            perror(errorString);
             exit(3);
         }
     }
 
     //Loop through our semaphores and print their values
-    for (i=0; i < NS; ++i) {
+    for (i = 0; i < NS; ++i) {
 
         if ((sem_value = semctl(sem_id, i, GETVAL, 0)) == -1) {
 
-            perror("ERROR: Could not retreive the semaphore value");
+            char errorString[100];
+            sprintf(errorString, "ERROR: Could not retrieve the value for semaphore %d", i);
+            perror(errorString);
             exit(4);
         }
         printf ("Semaphore %d has value of %d\n",i, sem_value);
@@ -117,7 +120,7 @@ int main(int argc, char *argv[])
     if(removeOption) {
         if (semctl(sem_id, 0, IPC_RMID, 0) == -1) {
 
-            perror ("ERROR: Could not remove semaphore");
+            perror ("ERROR: Could not remove the semaphore");
             exit(5);
         }
     }
