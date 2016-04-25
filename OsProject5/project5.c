@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
     int numChild = atoi(argv[1]);
 
     //Get our ropt (remove the semaphores or not)
-    bool semProtect;
-    if(strcmp(argv[1], "s") == 0) {
+    bool semProtect = false;
+    if(strcmp(argv[2], "s") == 0) {
         semProtect = true;
     }
     //Since it wasnt remove, it must be false
@@ -60,6 +60,18 @@ int main(int argc, char *argv[])
 
     //Get our semaphore array length (Only need a single semaphore)
     int NS = 1;
+
+    //Get our values for our semaphores in loop
+    int semValues[NS];
+    //i = 3, since it is where values begin in args array
+    for(i = 0; i < NS; i++) {
+        semValues[i] = 0;
+    }
+
+    //our seed
+    srand(time(NULL));
+    //Set the seed
+    rand();
 
     //Initialize our semaphore specific variables
     int sem_id, sem_value;
@@ -71,8 +83,7 @@ int main(int argc, char *argv[])
     ipc_key = ftok(".", 'S');
 
     /* Create semaphore */
-    //Using IPC_CREAT since we are creating multiple semaphore
-    if ((sem_id = semget(ipc_key, NS, IPC_CREAT | IPC_EXCL | 0666)) == -1) {
+    if ((sem_id = semget(ipc_key, NS, IPC_CREAT | 0666)) == -1) {
 
         perror ("Error: Could not create semaphore");
         exit(1);
@@ -102,13 +113,21 @@ int main(int argc, char *argv[])
             //Checking false first for code cleanliness
             if(!semProtect) writeBuffer(i, forkStatus, delayAdjust);
             else {
+
                 //Boolean for if we are still waiting
                 bool waiting = true;
                 while(waiting) {
 
                     //Get our semaphore value in a loop
-                    sem_value = semctl(sem_id, i, GETVAL, 0);
-                    while (sem_value != -1 || sem_value != 0) sem_value = semctl(sem_id, i, GETVAL, 0);
+                    sem_value = semctl(sem_id, 0, GETVAL, 0);
+                    while (sem_value != -1 && sem_value != 0) {
+
+                        //Sleep a random amount before checking the value again
+                        //Using usleep for millisecond sleeping
+                        int sleeptime = (rand() % delayAdjust) + 1;
+                        usleep(sleeptime * 1000);
+                        sem_value = semctl(sem_id, 0, GETVAL, 0);
+                    }
 
                     if(sem_value == 0) {
 
@@ -130,7 +149,7 @@ int main(int argc, char *argv[])
                         waiting = !writeBuffer(i, forkStatus, delayAdjust);
 
                         //Unlock the semephore
-                        arg.val = 0;
+                        arg.val = semValues[0];
 
                         if (semctl(sem_id, 0, SETVAL, arg) == -1) {
 
@@ -159,8 +178,9 @@ int main(int argc, char *argv[])
     }
 
     //Wait for our children
-    pid_t pid;
-    while (pid = waitpid(-1, NULL, 0)) {
+    //Waits for the number of children spawned to finish
+    for(i=0; i < numChild; i++) {
+        wait(NULL);
     }
 
     //Remove the semaphore
@@ -169,6 +189,8 @@ int main(int argc, char *argv[])
         perror ("ERROR: Could not remove the semaphore");
         exit(5);
     }
+
+    printf("Finished the program, Have a nice day!\n\n");
 
     //Finally exit
     exit(0);
@@ -232,8 +254,11 @@ bool writeBuffer(int childNum, pid_t childPid, int delay) {
     //Create a buffer
     char semBuffer [maxCannon];
 
-    //Set the buffer, and store its size
-    int size = sprintf (semBuffer, "i: %d process ID:%ld parent ID:%ld child ID:%ld", childNum, (long) getpid(),  (long) getppid(), (long) childPid);
+    //Set the buffer, and store ts size
+    int size = sprintf (semBuffer, "i: %d process ID:%ld parent ID:%ld child ID:%ld\n", childNum, (long) getpid(),  (long) getppid(), (long) childPid);
+
+    //Need to set the buffer for
+    setvbuf ( stdout , semBuffer , _IOFBF , NULL );
 
     //Print our while not pointed to the end
     int i;
@@ -243,7 +268,8 @@ bool writeBuffer(int childNum, pid_t childPid, int delay) {
         fputc(semBuffer[i], stdout);
 
         //Sleep for the delay
-        sleep(delay);
+        //Using usleep for millisecond sleeping
+        usleep(delay * 10000);
     }
 
 
