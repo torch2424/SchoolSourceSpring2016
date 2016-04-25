@@ -20,15 +20,18 @@
 # include <time.h>
 # include <string.h>
 # include <stdbool.h>
+# include <sys/wait.h>
 
 //Declare our helper functions
 void printUsage(char *programName);
 void checkInput(int argc, char *argv[]);
-bool writeBuffer(int childNum, pid_t childPid);
+bool writeBuffer(int childNum, pid_t childPid, int delay);
 
 //Create our union for our semaphores
+//Used for semctl
 union semun {
-    int val; struct semid_ds *buf; ushort *array;
+    int val;
+    struct semid_ds *buf;
 };
 
 int main(int argc, char *argv[])
@@ -37,7 +40,14 @@ int main(int argc, char *argv[])
     //Verify our input
     checkInput(argc, argv);
 
+    //Initialize i for loops
+    int i;
+
     //Grab our input
+
+    //Get our number of child processes
+    int numChild = atoi(argv[1]);
+
     //Get our ropt (remove the semaphores or not)
     bool semProtect;
     if(strcmp(argv[1], "s") == 0) {
@@ -45,16 +55,11 @@ int main(int argc, char *argv[])
     }
     //Since it wasnt remove, it must be false
 
+    //Lastly, grab our delay adjustment for priting
+    int delayAdjust = atoi(argv[3]);
+
     //Get our semaphore array length (Only need a single semaphore)
     int NS = 1;
-
-    //Set our semaphore Values
-    //To zero for start
-    int semValues[NS];
-    int i;
-    for(i = 0; i < argc; i++) {
-        semValues[i] = 0;
-    }
 
     //Initialize our semaphore specific variables
     int sem_id, sem_value;
@@ -85,7 +90,7 @@ int main(int argc, char *argv[])
 
 
     //Finally create a loop to fork our children
-    for(i = 0; i < atoi(argv[1]); ++i) {
+    for(i = 0; i < numChild; ++i) {
 
         //Create our forkstatus
         pid_t forkStatus;
@@ -95,7 +100,7 @@ int main(int argc, char *argv[])
 
             //Check if we would like semaphore protection
             //Checking false first for code cleanliness
-            if(!semProtect) writeBuffer(i, forkStatus);
+            if(!semProtect) writeBuffer(i, forkStatus, delayAdjust);
             else {
                 //Boolean for if we are still waiting
                 bool waiting = true;
@@ -110,9 +115,9 @@ int main(int argc, char *argv[])
                         //Immediately lock the semphore
                         /* Set arg (the union) to the address of the initializing vector */
                         // Set all of the semaphore's values to arg
-                        arg.val = semValues[0];
+                        arg.val = 1;
 
-                        if (semctl(sem_id, i, SETVAL, arg) == -1) {
+                        if (semctl(sem_id, 0, SETVAL, arg) == -1) {
 
                             char errorString[100];
                             sprintf(errorString, "ERROR: Could not set the value for semaphore %d", i);
@@ -121,8 +126,19 @@ int main(int argc, char *argv[])
                         }
 
                         //Call function to write a buffer
-                        //Return bang since it will return true on success
-                        waiting = !writeBuffer(i, forkStatus);
+                        //Return bang since it will return true ,on success
+                        waiting = !writeBuffer(i, forkStatus, delayAdjust);
+
+                        //Unlock the semephore
+                        arg.val = 0;
+
+                        if (semctl(sem_id, 0, SETVAL, arg) == -1) {
+
+                            char errorString[100];
+                            sprintf(errorString, "ERROR: Could not set the value for semaphore %d", i);
+                            perror(errorString);
+                            exit(3);
+                        }
                     }
                     else if(sem_value == -1) {
 
@@ -143,7 +159,9 @@ int main(int argc, char *argv[])
     }
 
     //Wait for our children
-    wait();
+    pid_t pid;
+    while (pid = waitpid(-1, NULL, 0)) {
+    }
 
     //Remove the semaphore
     if (semctl(sem_id, 0, IPC_RMID, 0) == -1) {
@@ -186,7 +204,7 @@ void checkInput(int argc, char *argv[]) {
     //Check that the ropt (argv[1]) option is s for protection
     //or n for no protection
     // 0 in strcmp means equal
-    if(strcmp(argv[1], "s") != 0 && strcmp(argv[1], "n") != 0) {
+    if(strcmp(argv[2], "s") != 0 && strcmp(argv[2], "n") != 0) {
 
        //Print Usage and exit
        printUsage(argv[0]);
@@ -206,17 +224,27 @@ void printUsage(char *programName) {
 }
 
 //Function to write to a buffer
-bool writeBuffer(int childNum, pid_t childPid) {
+bool writeBuffer(int childNum, pid_t childPid, int delay) {
 
     //Max cannon, maximum numbers of characters in the array
     int maxCannon = 255;
 
     //Create a buffer
     char semBuffer [maxCannon];
-    sprintf (semBuffer, "i: %d process ID:%ld parent ID:%ld child ID:%ld", childNum, (long) getpid(),  (long) getppid(), (long) childPid);
+
+    //Set the buffer, and store its size
+    int size = sprintf (semBuffer, "i: %d process ID:%ld parent ID:%ld child ID:%ld", childNum, (long) getpid(),  (long) getppid(), (long) childPid);
 
     //Print our while not pointed to the end
-    //while()
+    int i;
+    for(i = 0; i < size; ++i) {
+
+        //Print the character from the buffer
+        fputc(semBuffer[i], stdout);
+
+        //Sleep for the delay
+        sleep(delay);
+    }
 
 
     //Return false since the writing

@@ -9,7 +9,7 @@
 # include <stdlib.h>
 # include <sys/types.h>
 # include <unistd.h>
-#include <time.h>   /* Needed for struct timespec */
+# include <time.h>   /* Needed for struct timespec */
 int main(int argc, char *argv[])
 {
      //Initialize some variables
