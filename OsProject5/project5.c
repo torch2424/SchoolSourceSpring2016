@@ -40,6 +40,9 @@ int main(int argc, char *argv[])
     //Verify our input
     checkInput(argc, argv);
 
+    //Print a new line for spacing
+    printf("\n");
+
     //Initialize i for loops
     int i;
 
@@ -62,16 +65,13 @@ int main(int argc, char *argv[])
     int NS = 1;
 
     //Get our values for our semaphores in loop
+    //Using a semaphore array since it will be easier
+    //For professor and students in debugging, and easily
+    //used with ipcrm and ipcs
     int semValues[NS];
-    //i = 3, since it is where values begin in args array
     for(i = 0; i < NS; i++) {
         semValues[i] = 0;
     }
-
-    //our seed
-    srand(time(NULL));
-    //Set the seed
-    rand();
 
     //Initialize our semaphore specific variables
     int sem_id, sem_value;
@@ -109,9 +109,23 @@ int main(int argc, char *argv[])
         //Fork a child
         if ((forkStatus = fork()) == 0) {
 
+            //Setting a seed to do some random
+            //Semaphore checking
+            //our seed for random
+            srand((unsigned) getpid());
+
             //Check if we would like semaphore protection
             //Checking false first for code cleanliness
-            if(!semProtect) writeBuffer(i, forkStatus, delayAdjust);
+            if(!semProtect) {
+
+                //Sleep a random amount before checking the value again
+                //Using usleep for millisecond sleeping
+                int sleeptime = (rand() % delayAdjust) + 1;
+                usleep(sleeptime * 100000);
+
+                //Write the buffer
+                writeBuffer(i, forkStatus, delayAdjust);
+            }
             else {
 
                 //Boolean for if we are still waiting
@@ -125,7 +139,7 @@ int main(int argc, char *argv[])
                         //Sleep a random amount before checking the value again
                         //Using usleep for millisecond sleeping
                         int sleeptime = (rand() % delayAdjust) + 1;
-                        usleep(sleeptime * 1000);
+                        usleep(sleeptime * 10000);
                         sem_value = semctl(sem_id, 0, GETVAL, 0);
                     }
 
@@ -257,8 +271,17 @@ bool writeBuffer(int childNum, pid_t childPid, int delay) {
     //Set the buffer, and store ts size
     int size = sprintf (semBuffer, "i: %d process ID:%ld parent ID:%ld child ID:%ld\n", childNum, (long) getpid(),  (long) getppid(), (long) childPid);
 
-    //Need to set the buffer for
-    setvbuf ( stdout , semBuffer , _IOFBF , NULL );
+    /*
+    Need to set the buffer for out buffer
+    This is a weird thing with c, where all
+    input is line buffered, and after forking,
+    Characters cannot be printed without a newline,
+    Therefore we must remove buffering to complete
+    the project.
+    Read about it here:
+    http://stackoverflow.com/questions/2530663/printf-anomaly-after-fork
+    */
+    setvbuf (stdout, semBuffer, _IOFBF, (size_t) NULL);
 
     //Print our while not pointed to the end
     int i;
@@ -269,7 +292,8 @@ bool writeBuffer(int childNum, pid_t childPid, int delay) {
 
         //Sleep for the delay
         //Using usleep for millisecond sleeping
-        usleep(delay * 10000);
+        int sleeptime = (rand() % delay) + 1;
+        usleep(sleeptime * 10000);
     }
 
 
