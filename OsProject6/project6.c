@@ -245,7 +245,7 @@ void namedPipe(char* name, char* inputMessage, char* pipeName, int maxBufferSize
         static char message[BUFSIZ];
 
         //Reading
-        printf ("%s %ld is about to open FIFO %s\n", name, (long) getpid(), pipeName);
+        printf ("\n%s %ld is about to open FIFO %s\n", name, (long) getpid(), pipeName);
 
         //open the pipe
         if ((fd = open(pipeName, O_RDONLY | O_NONBLOCK)) == -1) {
@@ -260,9 +260,8 @@ void namedPipe(char* name, char* inputMessage, char* pipeName, int maxBufferSize
         //Wait for the writer to write
         int status;
         printf ("%s is waiting...\n", name);
-        while ((waitpid(waitId, &status, 0) == -1) && (errno == EINTR));
-
-
+        waitpid(waitId, &status, 0);
+        
         //Declare reading
         printf ("%s is about to read\n", name);
         if (read(fd, message, maxBufferSize) <=0) {
