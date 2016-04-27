@@ -24,8 +24,7 @@
 void printUsage(char *programName);
 void checkInput(int argc, char *argv[]);
 void noNamedPipe(char* name, char* message, int f_des[2], int maxBufferSize, bool readOrWrite);
-void namedRead();
-void namedWrite();
+void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid_t waitId, bool readOrWrite);
 
 int main(int argc, char *argv[])
 {
@@ -33,17 +32,17 @@ int main(int argc, char *argv[])
 
     //Boolean for name or unamed pipes
     //Change our argbase accordingly
-    bool namedPipe = true;
+    bool pipeIsNamed = true;
     int argBase = 1;
     if(strcmp(argv[1], "u") == 0) {
 
-        namedPipe = false;
+        pipeIsNamed = false;
         ++argBase;
     }
 
     //Grab our pipe name if we have one
     char* pipeName;
-    if(namedPipe) pipeName = argv[argBase];
+    if(pipeIsNamed) pipeName = argv[argBase];
 
     //Grab the pipe directions
     bool parentToChild = true;
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
     int maxBufferSize = 32;
 
     //Generate our pipe
-    if(namedPipe) {
+    if(pipeIsNamed) {
 
         //Generate a named pipe with r/w for user
         if ((mkfifo(pipeName, fifo_mode) == -1) && (errno != EEXIST)) {
@@ -88,13 +87,17 @@ int main(int argc, char *argv[])
     else if(childId == 0) {
 
         //Check if we are named our unamed
-        if(namedPipe) {
+        if(pipeIsNamed) {
 
+            //Check our direction
+            //(char* name, char* message, char* pipeName, int maxBufferSize, pid_t waitId, bool readOrWrite)
+            if(parentToChild) namedPipe("Child", "", pipeName, maxBufferSize, getppid(), true);
+            else namedPipe("Child", pipeMessage, pipeName, maxBufferSize, getppid(), false);
         }
         else {
 
             //Check our direction
-            if(parentToChild) noNamedPipe("Child", pipeMessage, f_des, maxBufferSize, true);
+            if(parentToChild) noNamedPipe("Child", "", f_des, maxBufferSize, true);
             else noNamedPipe("Child", pipeMessage, f_des, maxBufferSize, false);
         }
     }
@@ -108,84 +111,22 @@ int main(int argc, char *argv[])
         }
 
         //Check if we are named our unamed
-        if(namedPipe) {
+        if(pipeIsNamed) {
 
+            //Check our direction
+            //(char* name, char* message, char* pipeName, int maxBufferSize, pid_t waitId, bool readOrWrite)
+            if(parentToChild) namedPipe("Parent", pipeMessage, pipeName, maxBufferSize, childId, false);
+            else namedPipe("Parent", "", pipeName, maxBufferSize, childId, true);
         }
         else {
 
             //Check our direction
             if(parentToChild) noNamedPipe("Parent", pipeMessage, f_des, maxBufferSize, false);
-            else noNamedPipe("Parent", pipeMessage, f_des, maxBufferSize, true);
+            else noNamedPipe("Parent", "", f_des, maxBufferSize, true);
         }
     }
 
-
-
-
- //Intiilaze some variables
-  mode_t fifo_mode = S_IRUSR | S_IWUSR;
-  int fd, status, child;
-  char buf[BUFSIZE];
-  unsigned strsize;
-
-  /* generate a named pipe with r/w for user */
-  if ((mkfifo(argv[1],fifo_mode) == -1) && (errno != EEXIST)) {
-      perror ("Pipe");
-      exit(1);
-  }
-
-  //Fork to pipe and read/write a message, with a specified pipe name.
-  //Changed for the parent to read from the child
-  //Originally was child reading from the parent
-  if (( child = fork()) == -1) {
-      perror ("Fork");
-      exit(1);
-  }
-  else if (child == 0) {
-
-      printf ("Child %ld is about to open FIFO %s\n", (long) getpid(), argv[1]);
-
-      //open the pipe
-      if ((fd = open(argv[1], O_RDONLY | O_NONBLOCK)) == -1) {
-          perror("Child cannot open FIFO");
-          exit(1);
-      }
-      printf ("Child is about to read\n");
-      (long) getpid();
-
-      //Wait for the parent to write
-      while ((waitpid(getppid(), &status, 0) == -1) && (errno == EINTR));
-      if (read(fd, buf, BUFSIZE) <=0) {
-          perror("Child read from FIFO failed\n");
-          exit(1);
-      }
-
-      //Print the message
-      printf ("Child %ld received: %s\n", (long)getpid(), buf);
-  }
-
-  /* parent does a read */
-  else {
-
-      //Open the pipe
-      printf ("\n Parent %ld is about to open FIFO %s\n", (long)getpid(), argv[1]);
-      if ((fd = open(argv[1], O_WRONLY)) == -1) {
-          perror("Parent cannot open FIFO");
-          exit(1);
-      }
-
-      //Write to the pipe
-      sprintf (buf, "This was written by parent %ld\n", (long)getpid()); strsize = strlen(buf) + 1;
-      if (write(fd, buf, strsize) != strsize) {
-          printf("Parent write to FIFO failed\n");
-          exit(1);
-      }
-
-      //Finish message
-      printf ("Parent %ld is done\n", (long)getpid());
-  }
-
-  //Fincally exit the program
+  //Finally exit the program
   exit(0);
 }
 
@@ -288,6 +229,75 @@ void noNamedPipe(char* name, char* message, int f_des[2], int maxBufferSize, boo
 }
 
 //Pass the name of piper, the pipe messages, f_des, and a bool for reading and writing
-void namedPipe(char* name, char* message, int f_des[2], int maxBufferSize, pid_t processId, bool readOrWrite) {
+void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid_t waitId, bool readOrWrite) {
 
+    //Declare our fd for reading/wririntg
+    int fd;
+
+    //Check if we are reading or writing
+    if(readOrWrite) {
+
+        //Reading
+        printf ("%s %ld is about to open FIFO %s\n", name, (long) getpid(), message);
+
+        //open the pipe
+        if ((fd = open(pipeName, O_RDONLY | O_NONBLOCK)) == -1) {
+
+            //Error
+            char* errorMsg;
+            sprintf(errorMsg, "%s cannot open FIFO pipe, exiting...", name);
+            perror(errorMsg);
+            exit(1);
+        }
+
+        //Declare reading
+        printf ("%s is about to read\n", name);
+
+        //Wait for the writer to write
+        int status;
+        while ((waitpid(getppid(), &status, 0) == -1) && (errno == EINTR));
+        if (read(fd, message, maxBufferSize) <=0) {
+
+            //Error
+            char* errorMsg;
+            sprintf(errorMsg, "%s cannot read FIFO pipe, exiting...", name);
+            perror(errorMsg);
+            exit(1);
+        }
+
+        //Print the message
+        printf ("%s %ld received: %s\n", name, (long)getpid(), message);
+    }
+    else {
+
+        //Writing
+
+        //Open the pipe
+        printf ("\n %s %ld is about to open FIFO %s\n", name, (long)getpid(), message);
+
+        if ((fd = open(pipeName, O_WRONLY)) == -1) {
+            //Error
+            char* errorMsg;
+            sprintf(errorMsg, "%s cannot open FIFO, exiting...", name);
+            perror(errorMsg);
+            exit(1);
+        }
+
+        //Write to the pipe
+        sprintf (message, "This was written by %s %ld\n", name, (long)getpid());
+
+        int strsize = strlen(message) + 1;
+
+        if (write(fd, message, strsize) != strsize) {
+
+            //Error
+            char* errorMsg;
+            sprintf(errorMsg, "%s write to FIFO failed, exiting...\n", name);
+            perror(errorMsg);
+            exit(1);
+        }
+
+        //Finish message
+        printf ("%s %ld is done\n", name, (long)getpid());
+    }
 }
