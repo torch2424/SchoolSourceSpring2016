@@ -30,15 +30,16 @@ void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid
 int main(int argc, char *argv[])
 {
     //Grab our input
+    checkInput(argc, argv);
 
     //Boolean for name or unamed pipes
     //Change our argbase accordingly
     bool pipeIsNamed = true;
-    int argBase = 1;
+    int argBase = 2;
     if(strcmp(argv[1], "u") == 0) {
 
         pipeIsNamed = false;
-        ++argBase;
+        --argBase;
     }
 
     //Grab our pipe name if we have one
@@ -156,7 +157,7 @@ void checkInput(int argc, char *argv[]) {
     //Make an arg base variable we can reference to
     //To get the correct array index values
     int argBase = 1;
-    if(strcmp(argv[1], "n") == 0 && argc != 4) {
+    if(strcmp(argv[1], "n") == 0 && argc == 4) {
 
         //Print Usage and exit
         printUsage(argv[0]);
@@ -193,7 +194,7 @@ void printUsage(char *programName) {
 
 //Functions to help with piping
 //Pass the name of piper, the pipe messages, f_des, and a bool for reading and writing
-void noNamedPipe(char* name, char* message, int f_des[2], int maxBufferSize, bool readOrWrite) {
+void noNamedPipe(char* name, char* inputMessage, int f_des[], int maxBufferSize, bool readOrWrite) {
 
     //Check if we are reading or wiritng
     if(readOrWrite) {
@@ -202,6 +203,8 @@ void noNamedPipe(char* name, char* message, int f_des[2], int maxBufferSize, boo
         close(f_des[1]);
 
         //Read the message
+        //Initialize our reading message
+        static char message[BUFSIZ];
         if (read(f_des[0], message, maxBufferSize) != -1) {
 
             printf ("Message received by %s: *%s*\n", name, message); fflush(stdout);
@@ -217,9 +220,9 @@ void noNamedPipe(char* name, char* message, int f_des[2], int maxBufferSize, boo
         close(f_des[0]);
 
         //Write to the pipe
-        if (write(f_des[1], message, strlen(message)) != -1)
+        if (write(f_des[1], inputMessage, strlen(inputMessage)) != -1)
         {
-            printf ("Message sent by %s: [%s]\n", name, message);
+            printf ("Message sent by %s: [%s]\n", name, inputMessage);
             fflush(stdout);
         }
         else {
@@ -230,7 +233,7 @@ void noNamedPipe(char* name, char* message, int f_des[2], int maxBufferSize, boo
 }
 
 //Pass the name of piper, the pipe messages, f_des, and a bool for reading and writing
-void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid_t waitId, bool readOrWrite) {
+void namedPipe(char* name, char* inputMessage, char* pipeName, int maxBufferSize, pid_t waitId, bool readOrWrite) {
 
     //Declare our fd for reading/wririntg
     int fd;
@@ -238,8 +241,11 @@ void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid
     //Check if we are reading or writing
     if(readOrWrite) {
 
+        //Initialize our reading message
+        static char message[BUFSIZ];
+
         //Reading
-        printf ("%s %ld is about to open FIFO %s\n", name, (long) getpid(), message);
+        printf ("%s %ld is about to open FIFO %s\n", name, (long) getpid(), pipeName);
 
         //open the pipe
         if ((fd = open(pipeName, O_RDONLY | O_NONBLOCK)) == -1) {
@@ -251,12 +257,14 @@ void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid
             exit(1);
         }
 
-        //Declare reading
-        printf ("%s is about to read\n", name);
-
         //Wait for the writer to write
         int status;
-        while ((waitpid(getppid(), &status, 0) == -1) && (errno == EINTR));
+        printf ("%s is waiting...\n", name);
+        while ((waitpid(waitId, &status, 0) == -1) && (errno == EINTR));
+
+
+        //Declare reading
+        printf ("%s is about to read\n", name);
         if (read(fd, message, maxBufferSize) <=0) {
 
             //Error
@@ -274,7 +282,7 @@ void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid
         //Writing
 
         //Open the pipe
-        printf ("\n %s %ld is about to open FIFO %s\n", name, (long)getpid(), message);
+        printf ("\n%s %ld is about to open FIFO %s\n", name, (long)getpid(), pipeName);
 
         if ((fd = open(pipeName, O_WRONLY)) == -1) {
             //Error
@@ -285,11 +293,8 @@ void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid
         }
 
         //Write to the pipe
-        sprintf (message, "This was written by %s %ld\n", name, (long)getpid());
-
-        int strsize = strlen(message) + 1;
-
-        if (write(fd, message, strsize) != strsize) {
+        int strsize = strlen(inputMessage) + 1;
+        if (write(fd, inputMessage, strsize) != strsize) {
 
             //Error
             char* errorMsg;
@@ -299,6 +304,7 @@ void namedPipe(char* name, char* message, char* pipeName, int maxBufferSize, pid
         }
 
         //Finish message
+        printf ("This was written by %s %ld: %s\n", name, (long)getpid(), inputMessage);
         printf ("%s %ld is done\n", name, (long)getpid());
     }
 }
