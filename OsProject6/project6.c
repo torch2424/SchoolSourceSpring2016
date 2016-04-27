@@ -260,8 +260,8 @@ void namedPipe(char* name, char* inputMessage, char* pipeName, int maxBufferSize
         //Wait for the writer to write
         int status;
         printf ("%s is waiting...\n", name);
-        waitpid(waitId, &status, 0);
-        
+        while ((waitpid(waitId, &status, 0) == -1) && (errno == EINTR));
+
         //Declare reading
         printf ("%s is about to read\n", name);
         if (read(fd, message, maxBufferSize) <=0) {
