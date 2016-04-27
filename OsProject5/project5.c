@@ -210,55 +210,6 @@ int main(int argc, char *argv[])
     exit(0);
 }
 
-//Function to check our input
-void checkInput(int argc, char *argv[]) {
-
-    //Check the number of arguments
-    //Print the usage if argument amount is invalid
-    //We need at least 4 arguments, since it is
-    //Program name, option, number(>=1), sem value
-    if (argc != 4) {
-
-        //Print Usage and exit
-        printUsage(argv[0]);
-    }
-
-    //Check for characters on integers
-    int value;
-    if(sscanf(argv[1], "%d", &value) != 1) {
-
-        //Print Usage and exit
-        printUsage(argv[0]);
-    }
-    else if(sscanf(argv[3], "%d", &value) != 1) {
-
-        //Print Usage and exit
-        printUsage(argv[0]);
-    }
-
-
-    //Check that the ropt (argv[1]) option is s for protection
-    //or n for no protection
-    // 0 in strcmp means equal
-    if(strcmp(argv[2], "s") != 0 && strcmp(argv[2], "n") != 0) {
-
-       //Print Usage and exit
-       printUsage(argv[0]);
-    }
-
-    //Check that values are not negative
-    if(atoi(argv[1]) < 0 || atoi(argv[3]) < 0) printUsage(argv[0]);
-}
-
-//Function to print usage and exit
-void printUsage(char *programName) {
-
-    //Print the usage
-    printf("\n Usage: %s  [Integer: Number of Child Processes > 0] [Character: n for no semphore protection, s for semaphore protection] [Integer: Amount of output delay > 0]\n", programName);
-    //Exit
-    exit(1);
-}
-
 //Function to write to a buffer
 bool writeBuffer(int childNum, pid_t childPid, int delay) {
 
