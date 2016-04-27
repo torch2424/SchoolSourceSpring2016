@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <errno.h>
+#include <stdbool.h>
 
 //Declare our helper functions
 void printUsage(char *programName);
